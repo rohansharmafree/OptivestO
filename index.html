@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OptivestO Sector Intelligence — Local</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f7fa;color:#172033;font-family:Inter,Segoe UI,Arial,sans-serif}
+.wrap{max-width:1450px;margin:auto;padding:24px}.top{display:flex;justify-content:space-between;align-items:end;margin-bottom:18px}
+.brand{font-size:28px;font-weight:800}.sub{color:#697586;margin-top:4px}
+.controls{display:flex;gap:12px;flex-wrap:wrap;background:#fff;border:1px solid #e4e7ec;border-radius:14px;padding:15px;margin-bottom:18px}
+.control label{display:block;font-size:11px;color:#667085;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+select{padding:9px 11px;border:1px solid #d0d5dd;border-radius:8px;background:#fff;min-width:190px}
+.grid{display:grid;gap:18px}.card{background:#fff;border:1px solid #e4e7ec;border-radius:15px;padding:18px}
+.title{font-weight:750;font-size:16px}.hint{font-size:12px;color:#667085;margin:4px 0 14px}
+.chart{height:370px;position:relative}.chart.small{height:320px}.empty{display:grid;place-items:center;height:100%;border:1px dashed #cfd4dc;border-radius:10px;color:#667085;text-align:center;padding:20px}
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.pill{background:#f2f4f7;padding:7px 10px;border-radius:99px;font-size:12px;color:#475467}.ok{background:#ecfdf3;color:#067647}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}.kpi{background:#fff;border:1px solid #e4e7ec;border-radius:14px;padding:15px 18px;box-shadow:0 1px 2px rgba(16,24,40,.03)}.kpi .klabel{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#667085}.kpi .kvalue{font-size:24px;font-weight:800;margin-top:5px;color:#172b65}.kvalue.positive{color:#16834b}.kvalue.negative{color:#d92d20}.kvalue.neutral{color:#172b65}.kpi .ksub{font-size:12px;color:#667085;margin-top:3px}@media(max-width:800px){.kpis{grid-template-columns:1fr}}
+footer{text-align:center;color:#98a2b3;font-size:12px;margin-top:18px}
+@media(min-width:1050px){.grid{grid-template-columns:1fr 1fr}.full{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top"><div><div class="brand">OptivestO</div><div class="sub">Sector Intelligence — Local Model</div></div></div>
+
+<div class="controls">
+<div class="control"><label>Sector</label><select id="sector"></select></div>
+<div class="control"><label>Period</label><select id="years"><option value="1">1 Year</option><option value="3">3 Years</option><option value="5">5 Years</option><option value="10" selected>10 Years</option></select></div>
+<div class="control"><label>FPI View</label><select id="freq"><option value="cumulative" selected>Cumulative</option><option value="monthly">Monthly Flow</option><option value="quarterly">Quarterly Flow</option></select></div>
+<div class="control"><label>Stock</label><select id="stock"></select></div>
+<div class="control"><label>Screener Metric</label><select id="metric"><option value="fii_pct">FII</option><option value="dii_pct">DII</option><option value="promoter_pct">Promoter</option><option value="public_pct">Public</option></select></div>
+<div class="control"><label>Screener Frequency</label><select id="sharefreq"><option value="quarterly">Quarterly</option><option value="yearly">Yearly</option></select></div>
+</div>
+
+<div class="stats" id="stats"></div>
+
+<div class="kpis" id="kpis"></div>
+
+<div class="grid">
+<div class="card full">
+<div class="title">Sector FPI Flow vs Stock Performance vs Shareholding</div>
+<div class="hint">One linked view: sector FPI flow on the left axis, stock return on a separate right axis, and Screener ownership as visible bars with its own 0–100% axis.</div>
+<div class="chart" style="height:500px"><canvas id="merged"></canvas><div id="mergedEmpty" class="empty" style="display:none">No matching sector, stock or Screener data is available for the selected period.</div></div>
+</div>
+</div>
+
+<footer>OptivestO Sector Intelligence · Local v7 · CSV-driven</footer>
+</div>
+
+<script>
+let sectorData=[],priceData=[],shareData=[],universe=[],charts={};
+const $=x=>document.getElementById(x);
+
+async function loadCSV(path){
+  const r=await fetch(path); if(!r.ok) throw new Error(path);
+  const text=(await r.text()).replace(/^\uFEFF/,'').trim(); if(!text) return [];
+  const lines=text.split(/\r?\n/);
+  const parseLine=line=>{const cells=[];let cur='',q=false;for(const ch of line){if(ch==='"'){q=!q;continue}if(ch===','&&!q){cells.push(cur.trim());cur='';}else cur+=ch;}cells.push(cur.trim());return cells;};
+  const head=parseLine(lines[0]);
+  return lines.slice(1).filter(x=>x.trim()).map(line=>{const c=parseLine(line),o={};head.forEach((k,i)=>o[k]=c[i]??'');return o;});
+}
+function nk(s){return String(s??'').toLowerCase().replace(/[^a-z0-9]/g,'')}
+function key(o,arr){const ks=Object.keys(o);for(const a of arr){const n=nk(a),hit=ks.find(k=>nk(k)===n);if(hit)return hit;}return null}
+function num(v){if(v===null||v===undefined||v==='')return NaN;return Number(String(v).replace(/,/g,'').replace(/%/g,'').replace(/₹/g,'').trim())}
+function cleanSym(v){return String(v??'').trim().toUpperCase().replace(/\.NS$/,'')}
+function date(v){const d=new Date(String(v??'').trim());return d}
+function parse(){
+  if(sectorData.length){const x=sectorData[0],dk=key(x,['date','report_date','as_on_date','period','month']),sk=key(x,['sector','sector_name','industry','industry_name']),fk=key(x,['fpi_flow_cr','fpi_net_flow_cr','fii_flow_cr','fii_net_flow_cr','net_flow_cr','net_investment_cr','fpi_net_investment_cr','fii_net_investment_cr','equity_month_cr','net_investment','fpi_flow','fii_flow']);sectorData=sectorData.map(r=>({date:date(r[dk]),sector:String(r[sk]??'').trim(),fpi_flow_cr:num(r[fk])})).filter(r=>!isNaN(r.date)&&r.sector&&Number.isFinite(r.fpi_flow_cr));}
+  if(priceData.length){const x=priceData[0],dk=key(x,['date','trade_date','price_date','timestamp']),sk=key(x,['symbol','ticker','stock','stock_symbol','security_code']),ck=key(x,['close','close_price','adj_close','adjusted_close','closing_price']);priceData=priceData.map(r=>({date:date(r[dk]),symbol:cleanSym(r[sk]),close:num(r[ck])})).filter(r=>!isNaN(r.date)&&r.symbol&&Number.isFinite(r.close));}
+  if(shareData.length){const x=shareData[0],sk=key(x,['symbol','ticker','stock','stock_symbol','security_code']),tk=key(x,['period_type','frequency','type','data_type','periodicity']),pk=key(x,['period','date','quarter','year','report_date','as_on_date','quarter_end','quarter_ending']),fk=key(x,['fii_pct','fpi_pct','fii_holding_pct','fii_shareholding_pct','foreign_institutional_pct','fii','fpi','fii_holding','fii_shareholding','foreign_institutional_investors']),dk=key(x,['dii_pct','dii_holding_pct','dii_shareholding_pct','dii','dii_holding','dii_shareholding']),prk=key(x,['promoter_pct','promoters_pct','promoter_holding_pct','promoter','promoters','promoter_holding']),puk=key(x,['public_pct','public_holding_pct','public','public_holding']);shareData=shareData.map(r=>{let t=tk?String(r[tk]??'').trim().toUpperCase():'';let period=String(r[pk]??'').trim();let p=period.toUpperCase();if(t.includes('QTR')||t.includes('QUARTER')||/^Q[1-4]$/.test(t)||t==='Q')t='QUARTERLY';else if(t.includes('YEAR')||t.includes('ANNUAL')||t==='Y')t='YEARLY';else{let dt=new Date(period);let m=dt.getMonth()+1;if(/Q[1-4]|MAR|JUN|SEP|DEC/i.test(p)||(!isNaN(dt)&&[3,6,9,12].includes(m)))t='QUARTERLY';else t='YEARLY';}return{symbol:cleanSym(r[sk]),period_type:t,period,fii_pct:num(fk?r[fk]:NaN),dii_pct:num(dk?r[dk]:NaN),promoter_pct:num(prk?r[prk]:NaN),public_pct:num(puk?r[puk]:NaN)};}).filter(r=>r.symbol&&r.period);}
+  if(universe.length){const x=universe[0],sk=key(x,['symbol','ticker','stock','stock_symbol']),sec=key(x,['sector','sector_name','industry','industry_name','optivesto_sector']),nk2=key(x,['company_name','company','name','security_name']);universe=universe.map(r=>({symbol:cleanSym(r[sk]),sector:String(r[sec]??'').trim(),company_name:String(nk2?r[nk2]:r[sk]??'').trim()})).filter(r=>r.symbol&&r.sector);}
+}
+function escapeHtml(v){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function setSectors(){const s=[...new Set([...sectorData.map(x=>x.sector),...universe.map(x=>x.sector)].filter(Boolean))].sort();$('sector').innerHTML=s.map(x=>`<option>${escapeHtml(x)}</option>`).join('');setStocks();}
+function setStocks(){const sec=$('sector').value,rows=universe.filter(x=>x.sector===sec);$('stock').innerHTML=rows.map(x=>`<option value="${escapeHtml(x.symbol)}">${escapeHtml(x.symbol)} — ${escapeHtml(x.company_name)}</option>`).join('');drawAll();}
+function destroy(k){if(charts[k]){charts[k].destroy();charts[k]=null;}}
+function cutoff(rows,years){if(!rows.length)return null;const d=new Date(Math.max(...rows.map(x=>x.date)));d.setFullYear(d.getFullYear()-years);return d;}
+
+function periodDate(v){
+  const p=String(v??'').trim().toUpperCase();
+  let m=p.match(/^(MAR|JUN|SEP|DEC)[\s-]+(\d{4})$/);
+  if(m){const months={MAR:2,JUN:5,SEP:8,DEC:11};return new Date(+m[2],months[m[1]]+1,0);}
+  m=p.match(/^(\d{4})[-\/]?(\d{2})[-\/]?(\d{2})$/);
+  if(m)return new Date(+m[1],+m[2]-1,+m[3]);
+  const d=new Date(v);return isNaN(d)?null:d;
+}
+function monthKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;}
+function drawMerged(){
+  destroy('merged');
+  const sec=$('sector').value, sym=$('stock').value, years=+$('years').value, mode=$('freq').value, metric=$('metric').value, shareWanted=$('sharefreq').value.toUpperCase();
+  let sd=sectorData.filter(x=>x.sector===sec), pd=priceData.filter(x=>x.symbol===sym), sh=shareData.filter(x=>x.symbol===sym&&x.period_type===shareWanted&&Number.isFinite(x[metric]));
+  const sc=cutoff(sd,years), pc=cutoff(pd,years);
+  if(sc)sd=sd.filter(x=>x.date>=sc); if(pc)pd=pd.filter(x=>x.date>=pc);
+  const shareDates=sh.map(x=>periodDate(x.period)).filter(Boolean);
+  const latestDate=Math.max(...[...sd.map(x=>x.date.getTime()),...pd.map(x=>x.date.getTime()),...shareDates.map(x=>x.getTime())].filter(Number.isFinite));
+  if(Number.isFinite(latestDate)){const cut=new Date(latestDate);cut.setFullYear(cut.getFullYear()-years);sh=sh.filter(x=>{const d=periodDate(x.period);return d&&d>=cut;});}
+  sd.sort((a,b)=>a.date-b.date); pd.sort((a,b)=>a.date-b.date); sh.sort((a,b)=>periodDate(a.period)-periodDate(b.period));
+
+  const flowMap=new Map();
+  if(mode==='quarterly'){
+    const q={}; sd.forEach(x=>{const k=`${x.date.getFullYear()}-Q${Math.floor(x.date.getMonth()/3)+1}`;q[k]=(q[k]||0)+x.fpi_flow_cr;});
+    Object.entries(q).forEach(([k,v])=>flowMap.set(k,v));
+  } else if(mode==='cumulative'){
+    let run=0;sd.forEach(x=>{run+=x.fpi_flow_cr;flowMap.set(monthKey(x.date),run);});
+  } else sd.forEach(x=>flowMap.set(monthKey(x.date),x.fpi_flow_cr));
+
+  const stockMap=new Map();
+  if(pd.length){const base=pd[0].close;pd.forEach(x=>stockMap.set(monthKey(x.date),100*(x.close/base-1)));}
+  const shareMap=new Map(); sh.forEach(x=>{const d=periodDate(x.period);if(d)shareMap.set(monthKey(d),x[metric]);});
+
+  // Build ordered monthly/quarterly labels. Shareholding bars are sparse by design.
+  const keys=new Set([...flowMap.keys(),...stockMap.keys(),...shareMap.keys()]);
+  const allKeys=[...keys].sort((a,b)=>a.localeCompare(b));
+  const labels=allKeys.map(k=>{const [y,m]=k.split('-').map(Number);return new Date(y,m-1,1).toLocaleDateString('en-IN',{month:'short',year:'numeric'});});
+  const flowValues=allKeys.map(k=>flowMap.has(k)?flowMap.get(k):null);
+  const stockValues=allKeys.map(k=>stockMap.has(k)?stockMap.get(k):null);
+  const shareValues=allKeys.map(k=>shareMap.has(k)?shareMap.get(k):null);
+
+  const canvas=$('merged'),empty=$('mergedEmpty');
+  if(!allKeys.length){canvas.style.display='none';empty.style.display='grid';renderKpis(sec,sym,sd,pd,sh,metric,mode);return;}
+  canvas.style.display='block';empty.style.display='none';
+  const shareLabel=$('metric').selectedOptions[0].text+' Holding %';
+  const flowLabel=mode==='cumulative'?'Cumulative FPI Flow ₹ Cr':mode==='quarterly'?'Quarterly FPI Flow ₹ Cr':'Monthly FPI Flow ₹ Cr';
+
+  charts.merged=new Chart(canvas,{type:'bar',data:{labels:labels,datasets:[
+    {type:'line',label:flowLabel,data:flowValues,yAxisID:'yFlow',tension:.2,pointRadius:2,borderWidth:2,spanGaps:true},
+    {type:'line',label:sym+' — Return %',data:stockValues,yAxisID:'yPct',tension:.12,pointRadius:0,borderWidth:2,spanGaps:true},
+    {type:'bar',label:shareLabel,data:shareValues,yAxisID:'yShare',borderWidth:0,barPercentage:.9,categoryPercentage:.9}
+  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:true,position:'top'},tooltip:{callbacks:{label:c=>{if(c.dataset.yAxisID==='yShare')return ` ${c.dataset.label}: ${Number(c.raw).toFixed(2)}%`;if(c.dataset.yAxisID==='yFlow')return ` ${c.dataset.label}: ${Number(c.raw).toLocaleString('en-IN',{maximumFractionDigits:0})} Cr`;return ` ${c.dataset.label}: ${Number(c.raw).toFixed(1)}%`;}}}},scales:{yFlow:{type:'linear',position:'left',title:{display:true,text:'FPI flow (₹ Cr)',color:'#2196f3',font:{weight:'600'}},ticks:{color:'#2196f3',callback:v=>Number(v).toLocaleString('en-IN')}},yPct:{type:'linear',position:'right',title:{display:true,text:'Stock Return (%)',color:'#ff5c70',font:{weight:'600'}},grid:{drawOnChartArea:false},ticks:{color:'#ff5c70',callback:v=>Number(v).toFixed(0)+'%'}},yShare:{type:'linear',position:'right',offset:true,min:0,max:100,title:{display:true,text:'Shareholding (%)',color:'#f3a34b',font:{weight:'600'}},grid:{drawOnChartArea:false},ticks:{color:'#f3a34b',callback:v=>Number(v).toFixed(0)+'%'}},x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:14}}}}});
+  renderKpis(sec,sym,sd,pd,sh,metric,mode);
+}
+function renderKpis(sec,sym,sd,pd,sh,metric,mode){
+  const k=$('kpis');
+
+  // Match the KPI exactly to the plotted FPI series.
+  // Cumulative view: final cumulative value over the selected period.
+  // Monthly/quarterly view: net flow across the selected period.
+  let fpi=NaN;
+  if(sd.length){
+    if(mode==='cumulative'){
+      let run=0;
+      sd.slice().sort((a,b)=>a.date-b.date).forEach(x=>{run+=x.fpi_flow_cr;});
+      fpi=run;
+    } else {
+      fpi=sd.reduce((a,x)=>a+x.fpi_flow_cr,0);
+    }
+  }
+
+  const stockRet=pd.length?100*(pd[pd.length-1].close/pd[0].close-1):NaN;
+  const latest=sh.length?sh.slice().sort((a,b)=>periodDate(a.period)-periodDate(b.period)).at(-1):null;
+  const metricLabel=$('metric').selectedOptions[0].text;
+
+  const fmtCr=v=>Number.isFinite(v)
+    ? `${v>0?'+':v<0?'−':''}₹ ${Math.abs(v).toLocaleString('en-IN',{maximumFractionDigits:0})} Cr`
+    :'—';
+  const fmtPct=v=>Number.isFinite(v)
+    ? `${v>0?'+':v<0?'−':''}${Math.abs(v).toFixed(1)}%`
+    :'—';
+
+  const signClass=v=>Number.isFinite(v)?(v<0?'negative':v>0?'positive':'neutral'):'neutral';
+
+  k.innerHTML=`
+    <div class="kpi">
+      <div class="klabel">Sector FPI Flow</div>
+      <div class="kvalue ${signClass(fpi)}">${fmtCr(fpi)}</div>
+      <div class="ksub">${escapeHtml(sec)}</div>
+    </div>
+    <div class="kpi">
+      <div class="klabel">${escapeHtml(sym)} Return</div>
+      <div class="kvalue ${signClass(stockRet)}">${fmtPct(stockRet)}</div>
+      <div class="ksub">Price performance over selected period</div>
+    </div>
+    <div class="kpi">
+      <div class="klabel">Latest ${escapeHtml(metricLabel)} Holding</div>
+      <div class="kvalue">${latest&&Number.isFinite(latest[metric])?latest[metric].toFixed(1)+'%':'—'}</div>
+      <div class="ksub">${latest?escapeHtml(latest.period):'No Screener data'}</div>
+    </div>`;
+}
+function drawPrice(){ /* merged chart is the primary view */ }
+function drawShare(){ /* merged chart contains Screener bars */ }
+function status(){const fii=shareData.filter(x=>Number.isFinite(x.fii_pct)).length;$('stats').innerHTML=`<span class="pill ok">${universe.length} shortlisted stocks</span><span class="pill ${priceData.length?'ok':''}">${priceData.length.toLocaleString()} price rows</span><span class="pill ${fii?'ok':''}">${shareData.length.toLocaleString()} Screener rows (${fii.toLocaleString()} FII values)</span><span class="pill ok">${sectorData.length.toLocaleString()} sector observations</span>`;}
+function drawAll(){drawMerged();}
+async function init(){try{[sectorData,priceData,shareData,universe]=await Promise.all([loadCSV('final_data/sector_data.csv'),loadCSV('final_data/stock_price_data.csv'),loadCSV('final_data/screener_shareholding.csv'),loadCSV('final_data/stock_universe.csv')]);parse();setSectors();status();}catch(e){document.body.innerHTML='<div class="wrap"><h2>Data load error</h2><p>'+escapeHtml(e.message)+'</p><p>Run <b>python serve.py</b> and open the displayed localhost address.</p></div>';console.error(e);}}
+$('sector').onchange=setStocks;$('years').onchange=drawAll;$('freq').onchange=drawMerged;$('stock').onchange=drawAll;$('metric').onchange=drawAll;$('sharefreq').onchange=drawAll;init();
+</script>
+</body></html>
