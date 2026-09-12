@@ -150,6 +150,33 @@ footer{text-align:center;color:#98a2b3;font-size:12px;margin-top:18px}
 #flow16Rows{display:contents}
 .flow16-table > .flow16-th:nth-child(5){border-right:0}
 .flow16-table .flow16-cell:nth-child(5n){border-right:0}
+
+.fpi12-card{padding:18px 20px}.fpi12-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.fpi12-asof{border:1px solid #d0d5dd;border-radius:10px;padding:7px 12px;min-width:110px;text-align:center}.fpi12-asof span{display:block;font-size:10px;color:#667085}.fpi12-asof b{display:block;font-size:13px;color:#173a68;margin-top:2px}
+.fpi12-legend{display:flex;gap:18px;flex-wrap:wrap;margin:9px 0;font-size:12px;color:#475467}.fpi12-in{color:#067647;font-weight:700}.fpi12-out{color:#d92d20;font-weight:700}
+.fpi12-note{background:#f8fbff;border:1px solid #d0e5f5;border-radius:9px;padding:9px 11px;color:#344054;font-size:11px;line-height:1.45;margin-bottom:12px}
+.fpi12-table-wrap{width:100%;overflow:auto;border:1px solid #dbe5f0;border-radius:10px}.fpi12-table{width:100%;min-width:1080px;border-collapse:separate;border-spacing:0;table-layout:fixed}
+.fpi12-table th{position:sticky;top:0;z-index:2;background:#eef5fc;color:#173a68;font-size:10px;font-weight:700;padding:8px 4px;border-right:1px solid #dbe5f0;border-bottom:1px solid #dbe5f0;text-align:center}
+.fpi12-table th:first-child{width:185px;text-align:left;left:0;z-index:4}.fpi12-table th:last-child{width:125px;right:0;z-index:4}
+.fpi12-table td{height:35px;padding:3px;border-right:1px solid #fff;border-bottom:1px solid #fff;font-size:9px;text-align:center}
+.fpi12-table td:first-child{background:#fff;text-align:left;font-size:10px;font-weight:650;color:#173a68;position:sticky;left:0;z-index:3;border-right:1px solid #dbe5f0}
+.fpi12-table td:last-child{position:sticky;right:0;z-index:3;font-size:10px;font-weight:750;background:#fff;border-left:1px solid #dbe5f0}
+.fpi12-cell{border-radius:4px;padding:4px 2px}.fpi12-pos1{background:#edf9f1;color:#067647}.fpi12-pos2{background:#d7f0df;color:#05603a}.fpi12-pos3{background:#a9dfbb;color:#045c38}.fpi12-pos4{background:#63c484;color:#fff}.fpi12-pos5{background:#18a957;color:#fff}
+.fpi12-neg1{background:#fff0f0;color:#b42318}.fpi12-neg2{background:#fddada;color:#b42318}.fpi12-neg3{background:#f7aaaa;color:#8f1d1d}.fpi12-neg4{background:#ed6b6b;color:#fff}.fpi12-neg5{background:#d92d20;color:#fff}.fpi12-zero{background:#f2f4f7;color:#667085}
+.fpi12-net-in{color:#067647;background:#f0fdf4!important}.fpi12-net-out{color:#d92d20;background:#fff5f5!important}
+.fpi12-bottom{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;font-size:11px;color:#475467}
+@media(max-width:700px){.fpi12-bottom{grid-template-columns:1fr}.fpi12-table{min-width:1080px}}
+
+/* v19 — clean 12M net FPI sector chart */
+.fpi19-card{padding:18px 20px}
+.fpi19-actions{display:flex;align-items:flex-end;gap:12px}.fpi19-period-control{display:flex;flex-direction:column;gap:4px}.fpi19-period-control label{font-size:10px;font-weight:700;color:#667085;text-transform:uppercase;letter-spacing:.04em}.fpi19-period-control select{height:36px;min-width:132px;padding:0 30px 0 10px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;color:#173a68;font-size:12px;font-weight:650;cursor:pointer;outline:none}.fpi19-period-control select:focus{border-color:#98a2b3;box-shadow:0 0 0 3px rgba(16,24,40,.06)}
+.fpi19-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.fpi19-asof{border:1px solid #d0d5dd;border-radius:10px;padding:7px 12px;min-width:110px;text-align:center;background:#fff}
+.fpi19-asof span{display:block;font-size:10px;color:#667085}.fpi19-asof b{display:block;font-size:13px;color:#173a68;margin-top:2px}
+.fpi19-legend{display:flex;gap:18px;flex-wrap:wrap;margin:9px 0;font-size:12px;color:#475467}.fpi19-in{color:#067647;font-weight:700}.fpi19-out{color:#d92d20;font-weight:700}
+.fpi19-note{background:#f8fbff;border:1px solid #d0e5f5;border-radius:9px;padding:9px 11px;color:#344054;font-size:11px;line-height:1.45;margin-bottom:12px}
+.fpi19-chart{height:620px;position:relative}
+@media(max-width:700px){.fpi19-chart{height:720px}.fpi19-head{flex-direction:column}.fpi19-actions{width:100%;justify-content:space-between}}
 </style>
 </head>
 <body>
@@ -177,52 +204,34 @@ footer{text-align:center;color:#98a2b3;font-size:12px;margin-top:18px}
 </div>
 </div>
 
-<div class="card full flow16-card">
-  <div class="flow16-title-row">
-    <div>
-      <div class="title">Sector FPI In / Out Flow — Last 12 Months vs Last 1 Month</div>
-      <div class="hint" id="flow16Hint">Compare the total FPI flow over the last 12 months with the latest month to identify where foreign money is flowing.</div>
-    </div>
-    <div class="flow16-asof">
-      <span>Data as on</span>
-      <b id="flow16AsOf">Aug 2026</b>
-    </div>
+<div class="card full fpi19-card">
+<div class="fpi19-head">
+  <div>
+    <div class="title" id="fpi19Title">Sector FPI Flow — Last 12 Months</div>
+    <div class="hint" id="fpi19Hint">12-month net FPI flow by sector.</div>
   </div>
-
-  <div class="flow16-grid">
-    <div class="flow16-chart-panel">
-      <div class="flow16-axis-labels">
-        <span class="out">← FPI OUTFLOW (₹ Cr)</span>
-        <span class="in">FPI INFLOW (₹ Cr) →</span>
-      </div>
-      <div class="chart flow16-chart"><canvas id="sectorFlow16"></canvas>
-        <div id="sectorFlow16Empty" class="empty" style="display:none">No sector FPI data is available.</div>
-      </div>
+  <div class="fpi19-actions">
+    <div class="fpi19-period-control">
+      <label for="fpiPeriod">FPI Period</label>
+      <select id="fpiPeriod">
+        <option value="1">1 Month</option>
+        <option value="3">3 Months</option>
+        <option value="6">6 Months</option>
+        <option value="12" selected>12 Months</option>
+      </select>
     </div>
-
-    <div class="flow16-table-panel">
-      <div class="flow16-table">
-        <div class="flow16-th">Sector</div>
-        <div class="flow16-th">Last 12 Months<br><span id="flow16YearRange"></span></div>
-        <div class="flow16-th">Last 1 Month<br><span id="flow16MonthRange"></span></div>
-        <div class="flow16-th">Direction</div>
-        <div class="flow16-th">Trend</div>
-        <div id="flow16Rows"></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="flow16-bottom">
-    <div class="flow16-legend-box">
-      <span><i class="flow16-dot twelve"></i>Last 12 Months</span>
-      <span><i class="flow16-dot one"></i>Last 1 Month</span>
-    </div>
-    <div class="flow16-explain">
-      <b>How to read:</b> Right = FPI inflow · Left = FPI outflow. Direction compares the latest 1-month flow with the average monthly flow over the last 12 months. <b>Reversal</b> means the latest month is opposite to the 12-month direction.
-    </div>
+    <div class="fpi19-asof"><span>Data as on</span><b id="fpi19AsOf">Aug 2026</b></div>
   </div>
 </div>
-<footer>OptivestO Sector Intelligence · Local v17 · CSV-driven · Last 12M vs Last 1M</footer>
+<div class="fpi19-legend">
+  <span class="fpi19-in">● Net inflow</span>
+  <span class="fpi19-out">● Net outflow</span>
+  <span id="fpi19LegendNet">Net = sum of monthly FPI flows</span>
+</div>
+<div class="fpi19-note"><b>How to read:</b> Each bar shows the <b id="fpi19NotePeriod">net FPI flow accumulated over the last 12 months</b> for that sector. Bars to the right of zero indicate net FPI inflow; bars to the left indicate net FPI outflow. This view is intended to show the big picture first. Monthly flow details can be added later.</div>
+<div class="fpi19-chart"><canvas id="fpi19Canvas"></canvas><div id="fpi19Empty" class="empty" style="display:none">No sector FPI data is available.</div></div>
+</div>
+<footer>OptivestO Sector Intelligence · Local v19 · CSV-driven · 12M FPI sector flow</footer>
 </div>
 
 <script>
@@ -265,61 +274,46 @@ function periodDate(v){
 function monthKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;}
 
 function drawSectorFlow12(){
-  destroy('sectorFlow16');
-  const canvas=$('sectorFlow16'), empty=$('sectorFlow16Empty'), rowsEl=$('flow16Rows');
-  if(!sectorData.length){
-    canvas.style.display='none'; empty.style.display='grid'; rowsEl.innerHTML=''; return;
-  }
+  const period=Number($('fpiPeriod')?.value||12);
+  const canvas=$('fpi19Canvas'),empty=$('fpi19Empty');
+  if(!sectorData.length){canvas.style.display='none';empty.style.display='grid';return;}
+  if(charts.fpi19){charts.fpi19.destroy();charts.fpi19=null;}
 
-  const rows0=sectorData.slice().sort((a,b)=>a.date-b.date);
-  const monthKeys=[...new Set(rows0.map(x=>`${x.date.getFullYear()}-${String(x.date.getMonth()+1).padStart(2,'0')}`))];
-  const latestMonth=monthKeys[monthKeys.length-1];
-  const yearMonths=monthKeys.slice(-12);
+  const all=sectorData.slice().sort((a,b)=>a.date-b.date);
+  const keys=[...new Set(all.map(x=>monthKey(x.date)))];
+  const months=keys.slice(-period);
+  const latest=months[months.length-1];
+  const first=months[0];
+  const rows=[...new Set(all.map(x=>x.sector).filter(Boolean))].map(sector=>{
+    const net=all.filter(x=>x.sector===sector&&months.includes(monthKey(x.date)))
+      .reduce((sum,x)=>sum+x.fpi_flow_cr,0);
+    return {sector,net};
+  }).sort((a,b)=>b.net-a.net);
 
-  function flow(sector,months){
-    const selected=new Set(monthKeys.slice(-months));
-    return sectorData
-      .filter(x=>x.sector===sector && selected.has(`${x.date.getFullYear()}-${String(x.date.getMonth()+1).padStart(2,'0')}`))
-      .reduce((s,x)=>s+x.fpi_flow_cr,0);
-  }
+  const fmtMonth=k=>{const [y,m]=k.split('-').map(Number);return new Date(y,m-1,1).toLocaleDateString('en-US',{month:'short',year:'2-digit'});};
+  const fmt=v=>`${v<0?'−₹':'₹'}${Math.abs(v).toLocaleString('en-IN',{maximumFractionDigits:0})} Cr`;
 
-  const sectors=[...new Set(sectorData.map(x=>x.sector).filter(Boolean))];
-  const rows=sectors.map(sector=>({
-    sector,
-    m1:flow(sector,1),
-    m12:flow(sector,12)
-  })).sort((a,b)=>b.m12-a.m12);
+  canvas.style.display='block';empty.style.display='none';
+  $('fpi19AsOf').textContent=fmtMonth(latest);
+  const periodLabel=period===1?'1 Month':`${period} Months`;
+  $('fpi19Title').textContent=`Sector FPI Flow — Last ${periodLabel}`;
+  $('fpi19Hint').textContent=`${periodLabel} net FPI flow by sector · ${fmtMonth(first)} → ${fmtMonth(latest)}.`;
+  $('fpi19LegendNet').textContent=`${period}M net = sum of monthly FPI flows`;
+  $('fpi19NotePeriod').textContent=`net FPI flow accumulated over the last ${periodLabel.toLowerCase()}`;
 
-  canvas.style.display='block'; empty.style.display='none';
-
-  charts.sectorFlow16=new Chart(canvas,{
+  charts.fpi19=new Chart(canvas,{
     type:'bar',
     data:{
       labels:rows.map(r=>r.sector),
-      datasets:[
-        {
-          label:'Last 12 Months',
-          data:rows.map(r=>r.m12),
-          backgroundColor:'rgba(86,145,194,.48)',
-          borderWidth:0,
-          borderRadius:4,
-          grouped:false,
-          barThickness:15,
-          maxBarThickness:15,
-          order:2
-        },
-        {
-          label:'Last 1 Month',
-          data:rows.map(r=>r.m1),
-          backgroundColor:'rgba(22,131,216,.96)',
-          borderWidth:0,
-          borderRadius:4,
-          grouped:false,
-          barThickness:6,
-          maxBarThickness:6,
-          order:1
-        }
-      ]
+      datasets:[{
+        label:`${period}M Net FPI Flow`,
+        data:rows.map(r=>r.net),
+        borderWidth:0,
+        borderRadius:4,
+        barPercentage:.82,
+        categoryPercentage:.86,
+        backgroundColor:rows.map(r=>r.net>=0?'rgba(22,163,74,.78)':'rgba(220,38,38,.72)')
+      }]
     },
     options:{
       indexAxis:'y',
@@ -328,69 +322,24 @@ function drawSectorFlow12(){
       interaction:{mode:'index',intersect:false},
       plugins:{
         legend:{display:false},
-        tooltip:{
-          callbacks:{
-            title:items=>items[0]?.label||'',
-            label:c=>` ${c.dataset.label}: ${Number(c.raw).toLocaleString('en-IN',{maximumFractionDigits:0})} Cr`
-          }
-        }
+        tooltip:{callbacks:{label:c=>` ${c.raw>=0?'+':'−'}₹ ${Math.abs(Number(c.raw)).toLocaleString('en-IN',{maximumFractionDigits:0})} Cr`}}
       },
       scales:{
         x:{
-          title:{display:true,text:'FPI Flow (₹ crore) · Outflow ← 0 → Inflow'},
+          beginAtZero:true,
+          title:{display:true,text:`${period}M Net FPI Flow (₹ crore)`},
           ticks:{callback:v=>Number(v).toLocaleString('en-IN')},
-          grid:{color:'rgba(16,24,40,.08)'},
-          beginAtZero:true
+          grid:{color:'rgba(16,24,40,.08)'}
         },
         y:{
           title:{display:true,text:'Sector'},
           grid:{display:false},
-          ticks:{autoSkip:false,font:{size:10}}
+          ticks:{autoSkip:false,font:{size:11}}
         }
       }
     }
   });
-
-  const fmt=v=>`${v<0?'−₹':'₹'}${Math.abs(v).toLocaleString('en-IN',{maximumFractionDigits:0})} Cr`;
-
-  function direction(m1,m12){
-    const pace=m12/12;
-    if(m1>=0 && m12>=0){
-      if(m1>pace*1.15) return ['↑ Inflow accelerating','accel','up'];
-      if(m1<pace*.85) return ['→ Inflow weakening','weak','turn'];
-      return ['→ Inflow steady','accel','flat'];
-    }
-    if(m1<0 && m12<0){
-      const outPace=Math.abs(m12)/12;
-      if(Math.abs(m1)>outPace*1.15) return ['↓ Outflow increasing','out','down'];
-      if(Math.abs(m1)<outPace*.85) return ['→ Outflow easing','weak','turn'];
-      return ['→ Outflow steady','out','flat'];
-    }
-    if(m1>=0 && m12<0) return ['↗ Reversal → Inflow','rev','up'];
-    return ['↘ Reversal → Outflow','revout','down'];
-  }
-
-  rowsEl.innerHTML=rows.map(r=>{
-    const [txt,cls,arrowCls]=direction(r.m1,r.m12);
-    const arrow=arrowCls==='up'?'↑':arrowCls==='down'?'↓':arrowCls==='turn'?'→':'→';
-    return `<div class="flow16-row">
-      <div class="flow16-cell flow16-sector">${escapeHtml(r.sector)}</div>
-      <div class="flow16-cell flow16-value ${r.m12>=0?'flow16-in':'flow16-out'}">${fmt(r.m12)}</div>
-      <div class="flow16-cell flow16-value ${r.m1>=0?'flow16-in':'flow16-out'}">${fmt(r.m1)}</div>
-      <div class="flow16-cell flow16-dir ${cls}">${txt}</div>
-      <div class="flow16-cell flow16-trend ${arrowCls}">${arrow}</div>
-    </div>`;
-  }).join('');
-
-  const first=yearMonths[0]||latestMonth;
-  const yearStartLabel=first.replace('-',' ');
-  $('flow16YearRange').textContent=`${first} → ${latestMonth}`;
-  $('flow16MonthRange').textContent=latestMonth;
-  $('flow16AsOf').textContent=latestMonth;
-  $('flow16Hint').textContent=
-    `Compare total FPI flow for the last 12 months (${first} → ${latestMonth}) with the latest month (${latestMonth}).`;
 }
-
 function drawMerged(){
   destroy('merged');
   const sec=$('sector').value, sym=$('stock').value, years=+$('years').value, mode=$('freq').value, metric=$('metric').value, shareWanted=$('sharefreq').value.toUpperCase();
@@ -487,6 +436,6 @@ function drawShare(){ /* merged chart contains Screener bars */ }
 function status(){const fii=shareData.filter(x=>Number.isFinite(x.fii_pct)).length;$('stats').innerHTML=`<span class="pill ok">${universe.length} shortlisted stocks</span><span class="pill ${priceData.length?'ok':''}">${priceData.length.toLocaleString()} price rows</span><span class="pill ${fii?'ok':''}">${shareData.length.toLocaleString()} Screener rows (${fii.toLocaleString()} FII values)</span><span class="pill ok">${sectorData.length.toLocaleString()} sector observations</span>`;}
 function drawAll(){drawMerged();}
 async function init(){try{[sectorData,priceData,shareData,universe]=await Promise.all([loadCSV('final_data/sector_data.csv'),loadCSV('final_data/stock_price_data.csv'),loadCSV('final_data/screener_shareholding.csv'),loadCSV('final_data/stock_universe.csv')]);parse();setSectors();status();drawSectorFlow12();}catch(e){document.body.innerHTML='<div class="wrap"><h2>Data load error</h2><p>'+escapeHtml(e.message)+'</p><p>Run <b>python serve.py</b> and open the displayed localhost address.</p></div>';console.error(e);}}
-$('sector').onchange=setStocks;$('years').onchange=drawAll;$('freq').onchange=drawMerged;$('stock').onchange=drawAll;$('metric').onchange=drawAll;$('sharefreq').onchange=drawAll;init();
+$('sector').onchange=setStocks;$('years').onchange=drawAll;$('fpiPeriod').onchange=drawSectorFlow12;$('freq').onchange=drawMerged;$('stock').onchange=drawAll;$('metric').onchange=drawAll;$('sharefreq').onchange=drawAll;init();
 </script>
 </body></html>
