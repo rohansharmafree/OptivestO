@@ -19,6 +19,137 @@ select{padding:9px 11px;border:1px solid #d0d5dd;border-radius:8px;background:#f
 .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}.kpi{background:#fff;border:1px solid #e4e7ec;border-radius:14px;padding:15px 18px;box-shadow:0 1px 2px rgba(16,24,40,.03)}.kpi .klabel{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#667085}.kpi .kvalue{font-size:24px;font-weight:800;margin-top:5px;color:#172b65}.kvalue.positive{color:#16834b}.kvalue.negative{color:#d92d20}.kvalue.neutral{color:#172b65}.kpi .ksub{font-size:12px;color:#667085;margin-top:3px}@media(max-width:800px){.kpis{grid-template-columns:1fr}}
 footer{text-align:center;color:#98a2b3;font-size:12px;margin-top:18px}
 @media(min-width:1050px){.grid{grid-template-columns:1fr 1fr}.full{grid-column:1/-1}}
+
+.flow-head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.flow-legend{display:flex;gap:16px;flex-wrap:wrap;margin:4px 0 10px;font-size:12px;color:#475467}
+.flow-legend span{display:inline-flex;align-items:center;gap:6px}
+.flow-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.flow-note{background:#eff8ff;border:1px solid #b2ddff;border-radius:10px;padding:9px 11px;color:#175cd3;font-size:12px;margin-bottom:10px}
+.flow-summary{display:grid;grid-template-columns:1.7fr repeat(4,1fr);gap:0;margin-top:12px;overflow:auto;border-top:1px solid #eaecf0}
+.flow-summary .cell{min-width:110px;padding:7px 9px;border-bottom:1px solid #eaecf0;font-size:11px}
+.flow-summary .head{font-weight:700;color:#475467;background:#f9fafb}
+.flow-summary .value{font-weight:700}
+.flow-summary .up{color:#067647}.flow-summary .down{color:#d92d20}.flow-summary .flat{color:#667085}
+@media(max-width:800px){.flow-summary{grid-template-columns:1.7fr repeat(4,110px)}}
+
+/* v15: robust 1M vs 12M flow summary layout */
+.flow12-head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.flow12-legend{display:flex;gap:18px;flex-wrap:wrap;margin:5px 0 10px;font-size:12px;color:#475467}
+.flow12-legend span{display:inline-flex;align-items:center;gap:6px}
+.flow12-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.flow12-note{background:#eff8ff;border:1px solid #b2ddff;border-radius:10px;padding:9px 11px;color:#175cd3;font-size:12px;margin-bottom:10px;line-height:1.45}
+.flow12-summary{
+  display:grid !important;
+  grid-template-columns:minmax(220px,1.8fr) minmax(110px,1fr) minmax(110px,1fr) minmax(170px,1.5fr) !important;
+  gap:0 !important;
+  width:100%;
+  margin-top:12px;
+  overflow-x:auto;
+  border-top:1px solid #eaecf0;
+}
+.flow12-summary .cell{
+  min-width:0;
+  padding:8px 9px;
+  border-bottom:1px solid #eaecf0;
+  font-size:11px;
+  line-height:1.25;
+  white-space:nowrap;
+}
+.flow12-summary .head{font-weight:700;color:#475467;background:#f9fafb}
+.flow12-summary .value{font-weight:700}
+.flow12-summary .in{color:#067647}
+.flow12-summary .out{color:#d92d20}
+.flow12-summary .turn{color:#b54708}
+.flow12-summary .flat{color:#667085}
+.flow12-direction{font-weight:700}
+@media(max-width:800px){
+  .flow12-summary{
+    grid-template-columns:220px 110px 110px 170px !important;
+    min-width:610px;
+  }
+}
+
+/* v16 — clean Last-12-Month vs Last-1-Month sector intelligence view */
+.flow16-card{padding:18px 20px}
+.flow16-title-row{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:12px}
+.flow16-asof{border:1px solid #d0d5dd;border-radius:10px;padding:7px 12px;min-width:110px;text-align:center;background:#fff}
+.flow16-asof span{display:block;font-size:10px;color:#667085}
+.flow16-asof b{display:block;font-size:13px;color:#173a68;margin-top:2px}
+.flow16-grid{display:grid;grid-template-columns:46% 54%;gap:18px;align-items:stretch}
+.flow16-chart-panel{min-width:0}
+.flow16-axis-labels{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700;padding:0 18px 3px}
+.flow16-axis-labels .out{color:#d92d20}
+.flow16-axis-labels .in{color:#067647}
+.flow16-chart{height:520px!important}
+.flow16-table-panel{min-width:0;overflow:hidden}
+.flow16-table{
+  display:grid;
+  grid-template-columns:minmax(170px,1.45fr) minmax(120px,1fr) minmax(120px,1fr) minmax(145px,1.2fr) minmax(90px,.7fr);
+  border:1px solid #dbe5f0;
+  border-radius:10px;
+  overflow:auto;
+  height:520px;
+  align-content:start;
+}
+.flow16-th{
+  position:sticky;top:0;z-index:2;
+  padding:9px 8px;
+  background:#eef5fc;
+  color:#173a68;
+  font-weight:700;
+  font-size:10px;
+  line-height:1.2;
+  border-bottom:1px solid #dbe5f0;
+  border-right:1px solid #dbe5f0;
+}
+.flow16-th span{font-weight:500;color:#667085}
+.flow16-row{display:contents}
+.flow16-cell{
+  padding:7px 8px;
+  min-height:28px;
+  display:flex;
+  align-items:center;
+  border-bottom:1px solid #eaecf0;
+  border-right:1px solid #eaecf0;
+  font-size:10.5px;
+  line-height:1.15;
+  white-space:nowrap;
+}
+.flow16-sector{font-weight:650;color:#173a68;white-space:normal}
+.flow16-value{font-weight:700}
+.flow16-in{color:#067647}
+.flow16-out{color:#d92d20}
+.flow16-dir{font-weight:700;white-space:normal}
+.flow16-dir.accel{color:#067647}
+.flow16-dir.weak{color:#b54708}
+.flow16-dir.out{color:#d92d20}
+.flow16-dir.rev{color:#12b76a}
+.flow16-dir.revout{color:#d92d20}
+.flow16-trend{font-size:18px;font-weight:800}
+.flow16-trend.up{color:#067647}
+.flow16-trend.down{color:#d92d20}
+.flow16-trend.turn{color:#b54708}
+.flow16-trend.flat{color:#667085}
+.flow16-bottom{display:grid;grid-template-columns:1fr 2fr;gap:14px;margin-top:12px}
+.flow16-legend-box,.flow16-explain{border:1px solid #dbe5f0;background:#f7fbff;border-radius:9px;padding:9px 12px;font-size:11px;color:#344054}
+.flow16-legend-box{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.flow16-dot{width:11px;height:11px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:-1px}
+.flow16-dot.twelve{background:#8eb2d6}
+.flow16-dot.one{background:#1683d8}
+@media(max-width:1100px){
+  .flow16-grid{grid-template-columns:1fr}
+  .flow16-chart{height:570px!important}
+  .flow16-table{height:auto;max-height:570px}
+}
+@media(max-width:700px){
+  .flow16-title-row{flex-direction:column}
+  .flow16-bottom{grid-template-columns:1fr}
+}
+
+/* v17 table fix: let generated row cells participate directly in the 5-column grid */
+#flow16Rows{display:contents}
+.flow16-table > .flow16-th:nth-child(5){border-right:0}
+.flow16-table .flow16-cell:nth-child(5n){border-right:0}
 </style>
 </head>
 <body>
@@ -46,7 +177,52 @@ footer{text-align:center;color:#98a2b3;font-size:12px;margin-top:18px}
 </div>
 </div>
 
-<footer>OptivestO Sector Intelligence · Local v7 · CSV-driven</footer>
+<div class="card full flow16-card">
+  <div class="flow16-title-row">
+    <div>
+      <div class="title">Sector FPI In / Out Flow — Last 12 Months vs Last 1 Month</div>
+      <div class="hint" id="flow16Hint">Compare the total FPI flow over the last 12 months with the latest month to identify where foreign money is flowing.</div>
+    </div>
+    <div class="flow16-asof">
+      <span>Data as on</span>
+      <b id="flow16AsOf">Aug 2026</b>
+    </div>
+  </div>
+
+  <div class="flow16-grid">
+    <div class="flow16-chart-panel">
+      <div class="flow16-axis-labels">
+        <span class="out">← FPI OUTFLOW (₹ Cr)</span>
+        <span class="in">FPI INFLOW (₹ Cr) →</span>
+      </div>
+      <div class="chart flow16-chart"><canvas id="sectorFlow16"></canvas>
+        <div id="sectorFlow16Empty" class="empty" style="display:none">No sector FPI data is available.</div>
+      </div>
+    </div>
+
+    <div class="flow16-table-panel">
+      <div class="flow16-table">
+        <div class="flow16-th">Sector</div>
+        <div class="flow16-th">Last 12 Months<br><span id="flow16YearRange"></span></div>
+        <div class="flow16-th">Last 1 Month<br><span id="flow16MonthRange"></span></div>
+        <div class="flow16-th">Direction</div>
+        <div class="flow16-th">Trend</div>
+        <div id="flow16Rows"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow16-bottom">
+    <div class="flow16-legend-box">
+      <span><i class="flow16-dot twelve"></i>Last 12 Months</span>
+      <span><i class="flow16-dot one"></i>Last 1 Month</span>
+    </div>
+    <div class="flow16-explain">
+      <b>How to read:</b> Right = FPI inflow · Left = FPI outflow. Direction compares the latest 1-month flow with the average monthly flow over the last 12 months. <b>Reversal</b> means the latest month is opposite to the 12-month direction.
+    </div>
+  </div>
+</div>
+<footer>OptivestO Sector Intelligence · Local v17 · CSV-driven · Last 12M vs Last 1M</footer>
 </div>
 
 <script>
@@ -87,6 +263,134 @@ function periodDate(v){
   const d=new Date(v);return isNaN(d)?null:d;
 }
 function monthKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;}
+
+function drawSectorFlow12(){
+  destroy('sectorFlow16');
+  const canvas=$('sectorFlow16'), empty=$('sectorFlow16Empty'), rowsEl=$('flow16Rows');
+  if(!sectorData.length){
+    canvas.style.display='none'; empty.style.display='grid'; rowsEl.innerHTML=''; return;
+  }
+
+  const rows0=sectorData.slice().sort((a,b)=>a.date-b.date);
+  const monthKeys=[...new Set(rows0.map(x=>`${x.date.getFullYear()}-${String(x.date.getMonth()+1).padStart(2,'0')}`))];
+  const latestMonth=monthKeys[monthKeys.length-1];
+  const yearMonths=monthKeys.slice(-12);
+
+  function flow(sector,months){
+    const selected=new Set(monthKeys.slice(-months));
+    return sectorData
+      .filter(x=>x.sector===sector && selected.has(`${x.date.getFullYear()}-${String(x.date.getMonth()+1).padStart(2,'0')}`))
+      .reduce((s,x)=>s+x.fpi_flow_cr,0);
+  }
+
+  const sectors=[...new Set(sectorData.map(x=>x.sector).filter(Boolean))];
+  const rows=sectors.map(sector=>({
+    sector,
+    m1:flow(sector,1),
+    m12:flow(sector,12)
+  })).sort((a,b)=>b.m12-a.m12);
+
+  canvas.style.display='block'; empty.style.display='none';
+
+  charts.sectorFlow16=new Chart(canvas,{
+    type:'bar',
+    data:{
+      labels:rows.map(r=>r.sector),
+      datasets:[
+        {
+          label:'Last 12 Months',
+          data:rows.map(r=>r.m12),
+          backgroundColor:'rgba(86,145,194,.48)',
+          borderWidth:0,
+          borderRadius:4,
+          grouped:false,
+          barThickness:15,
+          maxBarThickness:15,
+          order:2
+        },
+        {
+          label:'Last 1 Month',
+          data:rows.map(r=>r.m1),
+          backgroundColor:'rgba(22,131,216,.96)',
+          borderWidth:0,
+          borderRadius:4,
+          grouped:false,
+          barThickness:6,
+          maxBarThickness:6,
+          order:1
+        }
+      ]
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true,
+      maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          callbacks:{
+            title:items=>items[0]?.label||'',
+            label:c=>` ${c.dataset.label}: ${Number(c.raw).toLocaleString('en-IN',{maximumFractionDigits:0})} Cr`
+          }
+        }
+      },
+      scales:{
+        x:{
+          title:{display:true,text:'FPI Flow (₹ crore) · Outflow ← 0 → Inflow'},
+          ticks:{callback:v=>Number(v).toLocaleString('en-IN')},
+          grid:{color:'rgba(16,24,40,.08)'},
+          beginAtZero:true
+        },
+        y:{
+          title:{display:true,text:'Sector'},
+          grid:{display:false},
+          ticks:{autoSkip:false,font:{size:10}}
+        }
+      }
+    }
+  });
+
+  const fmt=v=>`${v<0?'−₹':'₹'}${Math.abs(v).toLocaleString('en-IN',{maximumFractionDigits:0})} Cr`;
+
+  function direction(m1,m12){
+    const pace=m12/12;
+    if(m1>=0 && m12>=0){
+      if(m1>pace*1.15) return ['↑ Inflow accelerating','accel','up'];
+      if(m1<pace*.85) return ['→ Inflow weakening','weak','turn'];
+      return ['→ Inflow steady','accel','flat'];
+    }
+    if(m1<0 && m12<0){
+      const outPace=Math.abs(m12)/12;
+      if(Math.abs(m1)>outPace*1.15) return ['↓ Outflow increasing','out','down'];
+      if(Math.abs(m1)<outPace*.85) return ['→ Outflow easing','weak','turn'];
+      return ['→ Outflow steady','out','flat'];
+    }
+    if(m1>=0 && m12<0) return ['↗ Reversal → Inflow','rev','up'];
+    return ['↘ Reversal → Outflow','revout','down'];
+  }
+
+  rowsEl.innerHTML=rows.map(r=>{
+    const [txt,cls,arrowCls]=direction(r.m1,r.m12);
+    const arrow=arrowCls==='up'?'↑':arrowCls==='down'?'↓':arrowCls==='turn'?'→':'→';
+    return `<div class="flow16-row">
+      <div class="flow16-cell flow16-sector">${escapeHtml(r.sector)}</div>
+      <div class="flow16-cell flow16-value ${r.m12>=0?'flow16-in':'flow16-out'}">${fmt(r.m12)}</div>
+      <div class="flow16-cell flow16-value ${r.m1>=0?'flow16-in':'flow16-out'}">${fmt(r.m1)}</div>
+      <div class="flow16-cell flow16-dir ${cls}">${txt}</div>
+      <div class="flow16-cell flow16-trend ${arrowCls}">${arrow}</div>
+    </div>`;
+  }).join('');
+
+  const first=yearMonths[0]||latestMonth;
+  const yearStartLabel=first.replace('-',' ');
+  $('flow16YearRange').textContent=`${first} → ${latestMonth}`;
+  $('flow16MonthRange').textContent=latestMonth;
+  $('flow16AsOf').textContent=latestMonth;
+  $('flow16Hint').textContent=
+    `Compare total FPI flow for the last 12 months (${first} → ${latestMonth}) with the latest month (${latestMonth}).`;
+}
+
 function drawMerged(){
   destroy('merged');
   const sec=$('sector').value, sym=$('stock').value, years=+$('years').value, mode=$('freq').value, metric=$('metric').value, shareWanted=$('sharefreq').value.toUpperCase();
@@ -182,7 +486,7 @@ function drawPrice(){ /* merged chart is the primary view */ }
 function drawShare(){ /* merged chart contains Screener bars */ }
 function status(){const fii=shareData.filter(x=>Number.isFinite(x.fii_pct)).length;$('stats').innerHTML=`<span class="pill ok">${universe.length} shortlisted stocks</span><span class="pill ${priceData.length?'ok':''}">${priceData.length.toLocaleString()} price rows</span><span class="pill ${fii?'ok':''}">${shareData.length.toLocaleString()} Screener rows (${fii.toLocaleString()} FII values)</span><span class="pill ok">${sectorData.length.toLocaleString()} sector observations</span>`;}
 function drawAll(){drawMerged();}
-async function init(){try{[sectorData,priceData,shareData,universe]=await Promise.all([loadCSV('final_data/sector_data.csv'),loadCSV('final_data/stock_price_data.csv'),loadCSV('final_data/screener_shareholding.csv'),loadCSV('final_data/stock_universe.csv')]);parse();setSectors();status();}catch(e){document.body.innerHTML='<div class="wrap"><h2>Data load error</h2><p>'+escapeHtml(e.message)+'</p><p>Run <b>python serve.py</b> and open the displayed localhost address.</p></div>';console.error(e);}}
+async function init(){try{[sectorData,priceData,shareData,universe]=await Promise.all([loadCSV('final_data/sector_data.csv'),loadCSV('final_data/stock_price_data.csv'),loadCSV('final_data/screener_shareholding.csv'),loadCSV('final_data/stock_universe.csv')]);parse();setSectors();status();drawSectorFlow12();}catch(e){document.body.innerHTML='<div class="wrap"><h2>Data load error</h2><p>'+escapeHtml(e.message)+'</p><p>Run <b>python serve.py</b> and open the displayed localhost address.</p></div>';console.error(e);}}
 $('sector').onchange=setStocks;$('years').onchange=drawAll;$('freq').onchange=drawMerged;$('stock').onchange=drawAll;$('metric').onchange=drawAll;$('sharefreq').onchange=drawAll;init();
 </script>
 </body></html>
