@@ -456,6 +456,16 @@ function winSound(){
   tone(659,.10,"sine",.04,.09);
   tone(784,.18,"sine",.05,.18);
 }
+function levelWinSound(){
+  initAudio();
+  // Celebratory ascending fanfare
+  tone(523,.12,"sine",.055,0);
+  tone(659,.12,"sine",.055,.10);
+  tone(784,.12,"sine",.06,.20);
+  tone(1047,.18,"sine",.07,.30);
+  tone(1319,.28,"sine",.065,.43);
+  tone(1568,.38,"triangle",.055,.60);
+}
 function loseSound(){
   tone(330,.12,"sine",.035,0);
   tone(247,.18,"sine",.04,.12);
@@ -582,15 +592,20 @@ function scores(){
 function safe(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
 
 function nextLevel(){
+  const clearedLevel=level+1;
+  try{ levelWinSound(); }catch(e){ console.warn("Level sound unavailable:",e); }
+
   if(level<2){
     level++;
-    $("result").textContent="LEVEL COMPLETE! 🚀";
+    $("result").textContent="🎉 CONGRATULATIONS! LEVEL "+clearedLevel+" CLEARED!";
     $("result").className="result win";
     update();
-    setTimeout(()=>{$("result").textContent=""},1300);
+    setTimeout(()=>{$("result").textContent=""},1800);
     locked=false;$("flip").disabled=false;
   }else{
-    finish("ALL LEVELS CLEARED");
+    $("result").textContent="🏆 CONGRATULATIONS! ALL LEVELS CLEARED!";
+    $("result").className="result win";
+    setTimeout(()=>finish("ALL LEVELS CLEARED"),900);
   }
 }
 
