@@ -1,1 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Capital Flip</title>
+<style>
+:root{
+  --bg:#06111e;--panel:#0c1d2f;--panel2:#091827;--border:#25435e;
+  --text:#edf5ff;--muted:#8ca5bd;--gold:#ffc857;--green:#29d17d;
+  --red:#ff6675;--blue:#55a7ff;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;min-height:100vh;background:
+  radial-gradient(circle at 50% -20%,#173b5c 0,#06111e 48%,#030911 100%);
+  color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif;
+}
+.app{max-width:1250px;margin:auto;padding:18px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.logo{font-size:22px;font-weight:900;letter-spacing:.5px}.logo span{color:var(--gold)}
+.status{font-size:11px;color:var(--muted);border:1px solid var(--border);padding:7px 11px;border-radius:20px}
 
+/* GAME STAGE: this is the triangle */
+.game-stage{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 150px minmax(0,1fr);
+  grid-template-rows:auto auto;
+  column-gap:18px;
+  row-gap:18px;
+  align-items:start;
+}
+
+/* USER / BOT top corners */
+.player-card{
+  background:linear-gradient(180deg,#10263d,#091a2b);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:12px;
+  box-shadow:0 14px 40px #0007;
+  min-width:0;
+}
+.user-card{grid-column:1;grid-row:1}
+.bot-card{grid-column:3;grid-row:1}
+
+.player-head{
+  display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px
+}
+.identity,.capital-box{
+  height:66px;background:#071725;border:1px solid #294963;border-radius:12px;
+  display:flex;align-items:center;padding:9px
+}
+.identity{gap:9px}
+.avatar{
+  width:43px;height:43px;border-radius:12px;display:flex;align-items:center;
+  justify-content:center;font-size:25px;flex:none
+}
+.avatar.user{background:linear-gradient(135deg,#1a669b,#10263d);border:1px solid #55a7ff}
+.avatar.bot{background:linear-gradient(135deg,#712d3e,#281722);border:1px solid #ff6675}
+.avatar.broker{background:linear-gradient(135deg,#66511d,#2c220f);border:1px solid #d8ad3d}
+.identity b{font-size:12px;display:block}.identity small{font-size:8px;color:var(--muted)}
+.capital-box{display:block;text-align:center}.capital-box small{font-size:8px;color:var(--muted);display:block}
+.capital-box strong{font-size:19px;display:block;margin-top:4px}
+
+.player-content{
+  display:grid;grid-template-columns:.9fr 1.2fr 64px;gap:8px;
+}
+.info-box,.chart-box,.predict-box{
+  height:165px;background:#071725;border:1px solid #294963;border-radius:11px;
+  overflow:hidden;position:relative;
+}
+.box-title{font-size:8px;font-weight:900;letter-spacing:1px;color:#8ca5bd;padding:8px 9px 4px}
+.info-list{padding:7px 9px;display:flex;flex-direction:column;gap:9px}
+.info-list div{font-size:8px;color:var(--muted)}
+.info-list b{display:block;color:var(--text);font-size:14px;margin-top:2px}
+.chart-box svg{position:absolute;left:0;bottom:0;width:100%;height:135px}
+.grid-bg{
+  background-image:linear-gradient(#17334a30 1px,transparent 1px),
+                    linear-gradient(90deg,#17334a30 1px,transparent 1px);
+  background-size:34px 25px;
+}
+.line{fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.user-line{stroke:var(--blue);filter:drop-shadow(0 0 4px #55a7ff66)}
+.bot-line{stroke:var(--red)}
+.broker-line{stroke:var(--gold)}
+
+.predict-box{text-align:center}
+.pick-buttons{display:flex;flex-direction:column;gap:9px;align-items:center;margin-top:17px}
+.pick{
+  width:39px;height:39px;border-radius:50%;border:1px solid #315370;
+  background:#0c2034;color:#dceaf7;font-weight:900;cursor:pointer
+}
+.pick.active{background:#3a2b0e;border-color:var(--gold);color:#ffd978}
+.pick-label{font-size:7px;color:var(--muted);margin-top:8px}
+
+.bet-area{
+  margin-top:9px;padding:8px;border:1px solid #294963;border-radius:11px;
+  background:#071725;text-align:center
+}
+.bet-area .box-title{padding:0 0 6px}
+.bets{display:flex;justify-content:center;gap:6px;flex-wrap:wrap}
+.bet{
+  background:#0b1c2d;color:var(--text);border:1px solid #294963;border-radius:9px;
+  padding:8px 11px;font-size:9px;font-weight:800;cursor:pointer
+}
+.bet.active{background:#332711;border-color:var(--gold);color:#ffd978}
+
+/* CENTER */
+.flip-zone{
+  grid-column:2;grid-row:1;align-self:center;text-align:center;
+  padding-top:35px;z-index:2
+}
+.coin{
+  width:82px;height:82px;border-radius:50%;margin:auto;
+  display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 35% 28%,#ffeaa4,#ffc857 48%,#ad7300);
+  border:4px solid #e0a72e;color:#563800;font-size:28px;font-weight:900;
+  box-shadow:0 10px 30px #0009
+}
+.flipping{animation:spin .75s ease-in-out}
+@keyframes spin{0%{transform:rotateY(0)}50%{transform:rotateY(900deg) scale(.82)}100%{transform:rotateY(1800deg)}}
+.vs{font-size:17px;color:var(--gold);font-weight:900;margin-top:7px}
+.vs-sub{font-size:7px;color:#6e879e;letter-spacing:1px;margin:2px 0 9px}
+.flip-btn{
+  width:130px;padding:13px 5px;border:0;border-radius:12px;
+  background:linear-gradient(135deg,#2bd57e,#16a960);color:#03150d;
+  font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 8px 20px #19c56b33
+}
+.flip-btn:disabled{opacity:.45}
+.game-actions{display:flex;gap:5px;margin-top:7px}
+.end-btn,.restart-btn{
+  flex:1;padding:8px 4px;border-radius:10px;
+  background:#172738;color:#b8c8d8;border:1px solid #38526a;
+  font-size:8px;font-weight:900;cursor:pointer;
+}
+.end-btn:hover,.restart-btn:hover{background:#26394d;color:#fff}
+.end-btn:disabled{opacity:.4;cursor:default}
+.result{font-size:9px;line-height:12px;min-height:27px;margin-top:7px}
+.win{color:var(--green)}.loss{color:var(--red)}
+
+/* BROKER bottom point of triangle */
+.broker-card{
+  grid-column:2;grid-row:2;
+  width:100%;min-width:0;
+  background:linear-gradient(180deg,#151e26,#09141d);
+  border:1px solid #695624;border-radius:18px;padding:11px;
+  box-shadow:0 12px 30px #0006
+}
+.broker-head{
+  display:grid;grid-template-columns:45px 1fr 100px;gap:8px;align-items:center
+}
+.broker-name b{display:block;font-size:11px}.broker-name small{display:block;font-size:8px;color:var(--muted)}
+.broker-money{text-align:right}.broker-money small{font-size:7px;color:var(--muted);display:block}.broker-money strong{color:var(--gold);font-size:13px}
+.broker-chart{
+  height:110px;margin-top:8px;border:1px solid #4b3d21;border-radius:10px;
+  position:relative;overflow:hidden
+}
+.broker-chart svg{position:absolute;inset:0;width:100%;height:100%}
+
+/* Overall game information */
+.progress-row{
+  margin:14px 0 0;background:#081725;border:1px solid var(--border);
+  border-radius:12px;padding:9px 12px;display:flex;align-items:center;gap:12px
+}
+.progress-row small{color:var(--muted);font-size:9px;white-space:nowrap}
+.progress{height:7px;background:#020a12;border-radius:99px;overflow:hidden;flex:1}
+.progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--green));transition:width .4s}
+.round-info{font-size:9px;color:var(--muted);white-space:nowrap}
+
+.flip-history{
+  margin-top:9px;background:#081725;border:1px solid var(--border);
+  border-radius:12px;padding:9px 11px;
+}
+.flip-history-title{
+  font-size:8px;font-weight:900;letter-spacing:1px;color:#8ca5bd;
+  display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;
+}
+.flip-history-title span{font-size:7px;font-weight:600;letter-spacing:0;color:#5f7890}
+.flip-history-list{display:flex;gap:7px;overflow:hidden}
+.flip-result{
+  width:32px;height:32px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:11px;font-weight:900;flex:0 0 auto;
+}
+.flip-heads{background:#173b5d;border:1px solid #55a7ff;color:#8fc9ff}
+.flip-tails{background:#3b2029;border:1px solid #ff6675;color:#ff9ba7}
+.flip-empty{font-size:8px;color:#526b82;padding:5px 0}
+.bottom-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:12px}
+.stat-card{background:#0a1a2a;border:1px solid var(--border);border-radius:12px;padding:10px}
+.stat-card small{display:block;color:var(--muted);font-size:8px;text-transform:uppercase}
+.stat-card b{display:block;font-size:15px;margin-top:4px}
+
+.rules-layout{display:grid;grid-template-columns:1.5fr .5fr;gap:12px;margin-top:12px}
+.rules,.scores{background:#0b1b2c;border:1px solid var(--border);border-radius:14px;padding:12px}
+.rules h3,.scores h3{margin:0 0 8px;font-size:12px}
+.rule{display:flex;justify-content:space-between;border-bottom:1px solid #1b344b;padding:7px 0;font-size:9px}
+.rule:last-child{border-bottom:0}.rule span{color:var(--muted)}
+.score-row{display:flex;justify-content:space-between;background:#071725;padding:7px 8px;border-radius:8px;margin:4px 0;font-size:9px}
+.empty{text-align:center;color:var(--muted);font-size:9px;padding:10px}
+.clear{float:right;background:#10263a;color:var(--text);border:1px solid #294963;border-radius:7px;padding:4px 7px;font-size:8px;cursor:pointer}
+
+footer{text-align:center;color:#58718a;font-size:9px;margin:12px 0 3px}
+
+/* Tablet/mobile: preserve the triangle as long as possible, then stack */
+@media(max-width:900px){
+  .game-stage{grid-template-columns:minmax(0,1fr) 110px minmax(0,1fr);gap:10px}
+  .player-content{grid-template-columns:1fr 1.15fr 55px}
+  .player-head{grid-template-columns:1fr}
+  .capital-box{height:48px;padding:5px}.capital-box strong{font-size:15px}
+  .identity{height:48px}.avatar{width:34px;height:34px;font-size:20px}
+  .info-box,.chart-box,.predict-box{height:145px}
+}
+@media(max-width:680px){
+  .app{padding:10px}
+  .game-stage{grid-template-columns:1fr;grid-template-rows:auto;gap:10px}
+  .user-card,.bot-card,.flip-zone,.broker-card{grid-column:1;grid-row:auto}
+  .flip-zone{padding:5px 0}
+  .broker-card{width:80%;justify-self:center}
+  .bottom-grid{grid-template-columns:1fr 1fr}
+  .rules-layout{grid-template-columns:1fr}
+}
+@media(max-width:450px){
+  .player-content{grid-template-columns:1fr 1.2fr 52px}
+  .broker-card{width:100%}
+  .bottom-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div id="startScreen" style="position:fixed;inset:0;z-index:100;background:radial-gradient(circle at 50% 35%,#173b5c,#030b14 70%);display:flex;align-items:center;justify-content:center;padding:20px">
+  <div style="width:min(420px,100%);text-align:center;background:#0b1d30;border:1px solid #31506d;border-radius:24px;padding:34px 24px;box-shadow:0 20px 60px #000b">
+    <div style="font-size:58px;margin-bottom:8px">🪙</div>
+    <div style="font-size:28px;font-weight:900;letter-spacing:.5px">CAPITAL <span style="color:#ffc857">FLIP</span></div>
+    <p style="color:#8ca5bd;font-size:12px;line-height:1.6">Start with ₹100. Predict HEADS or TAILS and build your capital.</p>
+    <button id="startGame" style="width:100%;margin-top:12px;padding:15px;border:0;border-radius:12px;background:linear-gradient(135deg,#ffc857,#e5a820);color:#3b2800;font-size:15px;font-weight:900;cursor:pointer">▶ START GAME</button>
+    <div style="color:#58718a;font-size:9px;margin-top:12px">Sound effects enabled</div>
+  </div>
+</div>
+<div class="app">
+
+  <div class="topbar">
+    <div class="logo">CAPITAL <span>FLIP</span></div>
+    <div class="status">VIRTUAL MONEY • START ₹100</div>
+  </div>
+
+  <div class="game-stage">
+
+    <!-- USER -->
+    <section class="player-card user-card">
+      <div class="player-head">
+        <div class="identity">
+          <div class="avatar user">👤</div>
+          <div><b>YOU</b><small>Player</small></div>
+        </div>
+        <div class="capital-box">
+          <small>CAPITAL</small><strong id="youCapital">₹100.00</strong>
+        </div>
+      </div>
+
+      <div class="player-content">
+        <div class="info-box">
+          <div class="box-title">STATISTICS</div>
+          <div class="info-list">
+            <div>Round<b id="userRound">0</b></div>
+            <div>Wins<b id="userWins">0</b></div>
+            <div>Win rate<b id="userRate">0%</b></div>
+          </div>
+        </div>
+
+        <div class="chart-box grid-bg">
+          <div class="box-title">PORTFOLIO</div>
+          <svg viewBox="0 0 360 150" preserveAspectRatio="none">
+            <polyline id="userLine" class="line user-line" points=""></polyline>
+          </svg>
+        </div>
+
+        <div class="predict-box">
+          <div class="box-title">PREDICT</div>
+          <div class="pick-buttons">
+            <button class="pick active" data-pick="heads">H</button>
+            <button class="pick" data-pick="tails">T</button>
+          </div>
+          <div class="pick-label" id="userPickLabel">HEADS</div>
+        </div>
+      </div>
+
+      <div class="bet-area">
+        <div class="box-title">YOUR BET</div>
+        <div class="bets" id="bets"></div>
+      </div>
+    </section>
+
+    <!-- FLIP -->
+    <section class="flip-zone">
+      <div class="coin" id="coin">₹</div>
+      <div class="vs">VS</div>
+      <div class="vs-sub">COIN BATTLE</div>
+      <button class="flip-btn" id="flip">🪙 FLIP</button>
+      <div class="game-actions">
+        <button class="end-btn" id="endGame">■ END GAME</button>
+        <button class="restart-btn" id="restartGame">↻ RESTART</button>
+      </div>
+      <div class="result" id="result"></div>
+    </section>
+
+    <!-- BOT -->
+    <section class="player-card bot-card">
+      <div class="player-head">
+        <div class="identity">
+          <div class="avatar bot">🤖</div>
+          <div><b>OPPONENT</b><small>Bot player</small></div>
+        </div>
+        <div class="capital-box">
+          <small>CAPITAL</small><strong id="botCapital">₹10,000.00</strong>
+        </div>
+      </div>
+
+      <div class="player-content">
+        <div class="info-box">
+          <div class="box-title">STATISTICS</div>
+          <div class="info-list">
+            <div>Rounds<b id="botRound">0</b></div>
+            <div>Wins<b id="botWins">0</b></div>
+            <div>Bet<b id="botBet">₹20.00</b></div>
+          </div>
+        </div>
+
+        <div class="chart-box grid-bg">
+          <div class="box-title">PORTFOLIO</div>
+          <svg viewBox="0 0 360 150" preserveAspectRatio="none">
+            <polyline id="botLine" class="line bot-line" points=""></polyline>
+          </svg>
+        </div>
+
+        <div class="predict-box">
+          <div class="box-title">PREDICT</div>
+          <div class="bot-choice pick">T</div>
+          <div class="pick-label" id="botPickLabel">TAILS</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BROKER -->
+    <section class="broker-card">
+      <div class="broker-head">
+        <div class="avatar broker">🏦</div>
+        <div class="broker-name"><b>BROKER</b><small>Fee collector</small></div>
+        <div class="broker-money"><small>FEES</small><strong id="brokerMoney">₹0.00</strong></div>
+      </div>
+      <div class="broker-chart grid-bg">
+        <div class="box-title">FEE COLLECTION HISTORY</div>
+        <svg viewBox="0 0 700 120" preserveAspectRatio="none">
+          <polyline id="brokerLine" class="line broker-line" points=""></polyline>
+        </svg>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="progress-row">
+    <small id="levelName">LEVEL 1 • BUILD</small>
+    <div class="progress"><i id="progress"></i></div>
+    <small id="target">TARGET ₹200</small>
+    <div class="round-info" id="roundInfo">Round 0</div>
+  </div>
+  <div class="flip-history">
+    <div class="flip-history-title">🪙 LAST 10 FLIPS <span>Most recent →</span></div>
+    <div class="flip-history-list" id="flipHistory">
+      <div class="flip-empty">No flips yet</div>
+    </div>
+  </div>
+
+  <div class="bottom-grid">
+    <div class="stat-card"><small>Your win rate</small><b id="winrate">0%</b></div>
+    <div class="stat-card"><small>Wins / losses</small><b id="wl">0 / 0</b></div>
+    <div class="stat-card"><small>Broker fees</small><b id="brokerStat">₹0.00</b></div>
+    <div class="stat-card"><small>Bot capital</small><b id="botStat">₹10,000.00</b></div>
+  </div>
+
+  <div class="rules-layout">
+    <div class="rules">
+      <h3>📋 Game Rules</h3>
+      <div class="rule"><span>Your starting capital</span><b>₹100</b></div>
+      <div class="rule"><span>Bot starting capital</span><b>₹10,000</b></div>
+      <div class="rule"><span>Level 1 bet</span><b>₹20 fixed</b></div>
+      <div class="rule"><span>Level 2+</span><b>₹10–₹50</b></div>
+      <div class="rule"><span>Correct prediction</span><b>1.9× bet</b></div>
+      <div class="rule"><span>Both players</span><b>Same bet</b></div>
+      <div class="rule"><span>Broker</span><b>0.2× bet</b></div>
+    </div>
+    <div class="scores">
+      <h3>🏆 High Scores <button class="clear" id="clear">Clear</button></h3>
+      <div id="scores"><div class="empty">No champion yet.<br>Be the first!</div></div>
+    </div>
+  </div>
+
+  <footer>For entertainment only • Virtual currency • No real-money wagering</footer>
+</div>
+
+<div class="modal" id="modal" style="display:none;position:fixed;inset:0;background:#020711dd;backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px;z-index:20">
+  <div style="max-width:390px;width:100%;background:#0e2034;border:1px solid #31506d;border-radius:20px;padding:25px;text-align:center">
+    <h2 id="modalTitle" style="margin:0 0 8px">🏆 NEW HIGH SCORE!</h2>
+    <p id="modalText" style="color:#8fa8c2;font-size:13px">Enter your name.</p>
+    <input id="name" maxlength="16" placeholder="Your name" style="width:100%;padding:12px;border-radius:10px;background:#07111f;border:1px solid #31506d;color:white;text-align:center">
+    <button id="save" style="width:100%;margin-top:10px;padding:12px;border:0;border-radius:10px;background:#ffc857;font-weight:900">SAVE SCORE</button>
+    <button id="again" style="width:100%;margin-top:8px;padding:10px;border:1px solid #31506d;border-radius:10px;background:#10253b;color:white">PLAY AGAIN</button>
+  </div>
+</div>
+
+<script>
+const levels=[
+  {name:"LEVEL 1 • BUILD",target:200},
+  {name:"LEVEL 2 • GROW",target:500},
+  {name:"LEVEL 3 • MASTER",target:1000}
+];
+
+let capital=100, bot=10000, broker=0, level=0, round=0;
+let wins=0, losses=0, bet=20, prediction="heads", locked=false;
+let history=[{you:100,bot:10000,broker:0}];
+let flipHistory=[];
+
+
+let audioCtx=null;
+function initAudio(){
+  if(!audioCtx){
+    const C=window.AudioContext||window.webkitAudioContext;
+    if(C) audioCtx=new C();
+  }
+  if(audioCtx && audioCtx.state==="suspended") audioCtx.resume();
+}
+function tone(freq,duration,type="sine",volume=.045,delay=0){
+  if(!audioCtx)return;
+  const now=audioCtx.currentTime+delay;
+  const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+  o.type=type;o.frequency.setValueAtTime(freq,now);
+  g.gain.setValueAtTime(.0001,now);
+  g.gain.exponentialRampToValueAtTime(volume,now+.008);
+  g.gain.exponentialRampToValueAtTime(.0001,now+duration);
+  o.connect(g);g.connect(audioCtx.destination);
+  o.start(now);o.stop(now+duration+.02);
+}
+function startSound(){
+  initAudio();
+  tone(523,.12,"sine",.05,0);
+  tone(659,.12,"sine",.05,.10);
+  tone(784,.20,"sine",.055,.20);
+}
+function flipSound(){
+  initAudio();
+  for(let i=0;i<7;i++){
+    tone(220+i*48,.055,"triangle",.028,i*.075);
+  }
+  tone(880,.12,"sine",.035,.53);
+}
+function winSound(){
+  tone(523,.10,"sine",.04,0);
+  tone(659,.10,"sine",.04,.09);
+  tone(784,.18,"sine",.05,.18);
+}
+function loseSound(){
+  tone(330,.12,"sine",.035,0);
+  tone(247,.18,"sine",.04,.12);
+}
+
+const $=id=>document.getElementById(id);
+const money=x=>"₹"+Number(x).toFixed(2);
+
+const startButton=$("startGame");
+if(startButton){
+  startButton.addEventListener("click",()=>{
+    const screen=$("startScreen");
+    try{
+      initAudio();
+      startSound();
+    }catch(e){
+      console.warn("Audio unavailable:",e);
+    }
+    if(screen){
+      screen.style.transition="opacity .35s";
+      screen.style.opacity="0";
+      setTimeout(()=>screen.remove(),350);
+    }
+  });
+}
+
+function renderBets(){
+  const el=$("bets");el.innerHTML="";
+  const amounts=level===0?[20]:[10,20,30,40,50];
+  amounts.forEach(a=>{
+    const b=document.createElement("button");
+    b.className="bet"+(a===bet?" active":"");
+    b.textContent="₹"+a;
+    b.onclick=()=>{if(!locked){bet=a;renderBets()}};
+    el.appendChild(b);
+  });
+}
+
+function renderFlipHistory(){
+  const el=$("flipHistory");
+  if(!flipHistory.length){
+    el.innerHTML='<div class="flip-empty">No flips yet</div>';
+    return;
+  }
+  el.innerHTML=flipHistory.slice(-10).reverse().map((x,i)=>{
+    const cls=x==="H"?"flip-heads":"flip-tails";
+    return `<div class="flip-result ${cls}" title="Flip ${flipHistory.length-i}">${x}</div>`;
+  }).join("");
+}
+
+function drawGraphs(){
+  // Each portfolio gets its own Y-axis range. This keeps small changes visible
+  // even though the bot starts with much more capital than the player.
+  function points(key,w,h){
+    const px=8,py=10;
+    const values=history.map(v=>Number(v[key])||0);
+    let min=Math.min(...values);
+    let max=Math.max(...values);
+    let range=max-min;
+
+    // Add a little breathing room above/below the actual data.
+    // If the series is flat, use a small artificial range so the line is centered.
+    if(range===0){
+      const pad=Math.max(Math.abs(max)*0.05,1);
+      min-=pad;
+      max+=pad;
+      range=max-min;
+    }else{
+      const pad=range*0.12;
+      min-=pad;
+      max+=pad;
+      range=max-min;
+    }
+
+    return history.map((v,i)=>{
+      const xx=history.length===1?px:px+i/(history.length-1)*(w-px*2);
+      const yy=h-py-((Number(v[key])||0)-min)/range*(h-py*2);
+      return xx.toFixed(1)+","+yy.toFixed(1);
+    }).join(" ");
+  }
+
+  $("userLine").setAttribute("points",points("you",360,150));
+  $("botLine").setAttribute("points",points("bot",360,150));
+  $("brokerLine").setAttribute("points",points("broker",700,120));
+}
+
+function update(){
+  $("youCapital").textContent=money(capital);
+  $("botCapital").textContent=money(bot);
+  $("brokerMoney").textContent=money(broker);
+
+  $("userRound").textContent=round;
+  $("userWins").textContent=wins;
+  $("userRate").textContent=(wins+losses?Math.round(wins/(wins+losses)*100):0)+"%";
+
+  $("botRound").textContent=round;
+  $("botWins").textContent=losses;
+  $("botBet").textContent=money(bet);
+
+  $("winrate").textContent=(wins+losses?Math.round(wins/(wins+losses)*100):0)+"%";
+  $("wl").textContent=wins+" / "+losses;
+  $("brokerStat").textContent=money(broker);
+  $("botStat").textContent=money(bot);
+
+  $("levelName").textContent=levels[level].name;
+  $("target").textContent="TARGET "+money(levels[level].target);
+  $("roundInfo").textContent="Round "+round;
+
+  const base=[100,200,500][level];
+  const pct=Math.max(0,Math.min(100,(capital-base)/(levels[level].target-base)*100));
+  $("progress").style.width=pct+"%";
+
+  drawGraphs();
+  renderBets();
+}
+
+function scores(){
+  let a=JSON.parse(localStorage.getItem("capitalFlipScores")||"[]");
+  a.sort((x,y)=>y.score-x.score);
+  $("scores").innerHTML=a.length
+    ? a.slice(0,5).map((x,i)=>`<div class="score-row"><span>${i+1}. ${safe(x.name)}</span><b>${money(x.score)}</b></div>`).join("")
+    : '<div class="empty">No champion yet.<br>Be the first!</div>';
+}
+function safe(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+
+function nextLevel(){
+  if(level<2){
+    level++;
+    $("result").textContent="LEVEL COMPLETE! 🚀";
+    $("result").className="result win";
+    update();
+    setTimeout(()=>{$("result").textContent=""},1300);
+    locked=false;$("flip").disabled=false;
+  }else{
+    finish("ALL LEVELS CLEARED");
+  }
+}
+
+function finish(reason="GAME ENDED"){
+  locked=true;
+  $("flip").disabled=true;
+  $("endGame").disabled=true;
+
+  const a=JSON.parse(localStorage.getItem("capitalFlipScores")||"[]");
+  const qualifies=a.length<5 || capital>a[a.length-1].score;
+
+  $("modalTitle").textContent=qualifies?"🏆 NEW HIGH SCORE!":"🎮 "+reason;
+  $("modalText").textContent=qualifies
+    ? "Final capital "+money(capital)+". Enter your name to save your score."
+    : "Final capital "+money(capital)+". Your run has ended.";
+
+  $("name").style.display=qualifies?"block":"none";
+  $("save").style.display=qualifies?"block":"none";
+  $("modal").style.display="flex";
+}
+
+document.querySelectorAll(".pick[data-pick]").forEach(btn=>{
+  btn.onclick=()=>{
+    if(locked)return;
+    prediction=btn.dataset.pick;
+    document.querySelectorAll(".pick[data-pick]").forEach(x=>x.classList.remove("active"));
+    btn.classList.add("active");
+    syncPredictions();
+  };
+});
+
+$("flip").onclick=()=>{
+  if(locked || bet>capital)return;
+  locked=true;$("flip").disabled=true;
+  initAudio();
+  flipSound();
+  $("coin").classList.add("flipping");
+  $("result").textContent="";
+
+  setTimeout(()=>{
+    const outcome=Math.random()<.5?"heads":"tails";
+    const win=prediction===outcome;
+    round++;
+    broker+=bet*.2;
+
+    if(win){
+      capital+=bet*.9;
+      bot-=bet;
+      wins++;
+      $("result").textContent="🟢 YOU WIN • BOT −"+money(bet)+" • YOU +"+money(bet*.9);
+      $("result").className="result win";
+      $("coin").textContent=outcome==="heads"?"H":"T";
+      winSound();
+    }else{
+      capital-=bet;
+      bot+=bet*.9;
+      losses++;
+      $("result").textContent="🔴 BOT WINS • YOU −"+money(bet)+" • BOT +"+money(bet*.9);
+      $("result").className="result loss";
+      $("coin").textContent=outcome==="heads"?"H":"T";
+      loseSound();
+    }
+
+    $("userPickLabel").textContent=prediction.toUpperCase();
+    $("botPickLabel").textContent=(prediction==="heads"?"TAILS":"HEADS");
+    history.push({you:Math.max(0,capital),bot:bot,broker:broker});
+    flipHistory.push(outcome==="heads"?"H":"T");
+    if(flipHistory.length>10) flipHistory.shift();
+    renderFlipHistory();
+
+    $("coin").classList.remove("flipping");
+    update();
+
+    if(capital>=levels[level].target){
+      setTimeout(nextLevel,800);
+    }else if(capital<5){
+      setTimeout(()=>{
+        locked=true;$("flip").disabled=true;
+        $("modalTitle").textContent="💥 CAPITAL BLOWN";
+        $("modalText").textContent="Capital is below the minimum bet required to continue.";
+        $("name").style.display="none";$("save").style.display="none";
+        $("modal").style.display="flex";
+      },600);
+    }else{
+      locked=false;$("flip").disabled=false;
+    }
+  },760);
+};
+
+$("endGame").onclick=()=>{
+  if(locked)return;
+  if(confirm("End this game and save the score if it qualifies for the leaderboard?")){
+    finish("GAME ENDED");
+  }
+};
+
+$("restartGame").onclick=()=>{
+  if(confirm("Restart the current game? Your high scores will be kept.")){
+    location.reload();
+  }
+};
+
+$("save").onclick=()=>{
+  const name=$("name").value.trim()||"Anonymous";
+  let a=JSON.parse(localStorage.getItem("capitalFlipScores")||"[]");
+  a.push({name,score:capital,date:Date.now()});
+  a.sort((x,y)=>y.score-x.score);
+  localStorage.setItem("capitalFlipScores",JSON.stringify(a.slice(0,5)));
+  scores();$("modal").style.display="none";
+};
+$("again").onclick=()=>location.reload();
+$("clear").onclick=()=>{
+  if(confirm("Clear all saved high scores?")){
+    localStorage.removeItem("capitalFlipScores");scores();
+  }
+};
+
+scores();update();syncPredictions();renderFlipHistory();
+</script>
+</body>
+</html>
