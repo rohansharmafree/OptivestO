@@ -78,7 +78,7 @@ button{cursor:pointer}
 <div class="app">
   <div class="top">
     <div>
-      <div class="brand">Trading Game</div>
+      <div class="brand">Trading Game V26</div>
       <div class="sub">Random starting price ₹10–₹1,000 · 100 candles already completed · Continue up to 500 candles</div>
     </div>
     <button class="new" onclick="newGame()">↻ New Game</button>
@@ -136,7 +136,7 @@ button{cursor:pointer}
       <div id="buyFields" class="fields" style="display:none">
         <div class="order-note">BUY: you can buy multiple times. Each executed BUY is added to your position and the average entry is recalculated. Leave price blank for next candle OPEN, or enter a BUY LIMIT price.</div>
         <div class="two">
-          <div class="field"><label>Buy Price (optional)</label><input id="buyPrice" type="number" step="0.01" placeholder="Blank = next open"></div>
+          <div class="field"><label>Buy Price (optional)</label><input id="buyPrice" type="number" step="0.01" placeholder="Blank = Market Order"></div>
           <div class="field"><label>Quantity</label><input id="buyQty" type="number" min="1" step="1" placeholder="e.g. 20"></div>
         </div>
         <div class="two">
@@ -151,7 +151,7 @@ button{cursor:pointer}
       <div id="sellFields" class="fields" style="display:none">
         <div class="order-note">SELL: leave price blank for execution at the next candle OPEN. Enter a price for a SELL LIMIT order.</div>
         <div class="two">
-          <div class="field"><label>Sell Price (optional)</label><input id="sellPrice" type="number" step="0.01" placeholder="Blank = next open"></div>
+          <div class="field"><label>Sell Price (optional)</label><input id="sellPrice" type="number" step="0.01" placeholder="Blank = Market Order"></div>
           <div class="field"><label>Quantity <span id="sellMax" style="color:#7891a8"></span></label><input id="sellQty" type="number" min="1" step="1" placeholder="e.g. 5" oninput="validateSellQty()"></div>
         </div>
         <button class="action place-sell" onclick="placeSell()">PLACE SELL ORDER</button>
