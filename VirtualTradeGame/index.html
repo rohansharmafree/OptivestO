@@ -1,1 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Trading Game V26</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#061322;color:#e8f0f7;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+button,input{font:inherit}
+button{cursor:pointer}
+.app{max-width:1450px;margin:auto;padding:18px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.brand{font-size:22px;font-weight:900}
+.sub{font-size:12px;color:#7891a8;margin-top:4px}
+.new{border:0;border-radius:9px;background:#16314b;color:#fff;padding:11px 18px;font-weight:800}
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:14px}
+.card{background:#0b1b2d;border:1px solid #1b3550;border-radius:12px;padding:14px}
+.label{font-size:11px;color:#7891a8;text-transform:uppercase;letter-spacing:.5px}
+.value{font-size:20px;font-weight:900;margin-top:7px}
+.green{color:#35d07f}.red{color:#ff6673}.yellow{color:#f4c95d}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px}
+.panel{background:#0b1b2d;border:1px solid #1b3550;border-radius:13px;padding:12px}
+.chart-head{display:flex;justify-content:space-between;align-items:end;margin:4px 6px 8px}
+.chart-title{font-size:16px;font-weight:900}
+.chart-sub{font-size:11px;color:#7891a8;margin-top:3px}
+.price{font-size:16px;font-weight:900}
+.chart-wrap{height:550px;background:#071727;border-radius:10px;overflow:hidden;border:1px solid #0d263d}
+#chart{width:100%;height:100%;display:block}
+.progress{height:6px;background:#102b44;border-radius:10px;margin:8px 5px 0;overflow:hidden}
+.progress>div{height:100%;background:#4ea1ff;width:50%}
+.side-title{font-size:12px;color:#7891a8;text-transform:uppercase;letter-spacing:.5px;margin:4px 2px 12px}
+.status{border:1px solid #1b3550;background:#071727;border-radius:10px;padding:12px;margin-bottom:12px;font-size:12px;color:#91a8bc;line-height:1.45}
+.status strong{display:block;color:#edf5fb;font-size:16px;margin-bottom:4px}
+.decision{font-size:12px;color:#91a8bc;margin:8px 0}
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mode-grid button{border:1px solid #24435f;background:#112b44;color:#e8f0f7;border-radius:9px;padding:12px;font-weight:900}
+.mode-grid .wait{grid-column:1/2}
+.mode-grid .active-buy{background:#35d07f;color:#062016;border-color:#35d07f}
+.mode-grid .active-sell{background:#ff6673;color:#25090d;border-color:#ff6673}
+.mode-grid .active-wait{background:#42546a;color:#fff}
+.fields{margin-top:12px}
+.field{margin-bottom:10px}
+.field label{display:block;color:#7891a8;font-size:11px;margin-bottom:5px}
+.field input{width:100%;background:#071727;border:1px solid #24435f;color:#e8f0f7;border-radius:8px;padding:11px 10px;outline:none}
+.field input:focus{border-color:#4ea1ff}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.action{width:100%;border:0;border-radius:9px;padding:12px;font-weight:900;margin-top:2px}
+.place-buy{background:#35d07f;color:#062016}.place-sell{background:#ff6673;color:#25090d}
+.next{background:#17334f;color:#fff;margin-top:9px}
+.cancel{background:#10283f;color:#a9bdce}
+.order-note{background:#071727;border:1px solid #1b3550;border-radius:8px;padding:9px;font-size:11px;color:#91a8bc;line-height:1.4;margin-bottom:9px}
 
+.history-panel{margin-top:12px;background:#071727;border:1px solid #1b3550;border-radius:10px;padding:12px}
+.history-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:9px}
+.history-table-wrap{max-height:220px;overflow:auto;display:block}
+.history-table{width:100%;border-collapse:collapse;font-size:11px}
+.history-table th{position:sticky;top:0;background:#0d2237;color:#7891a8;text-align:left;padding:8px;border-bottom:1px solid #1b3550}
+.history-table td{padding:8px;border-bottom:1px solid #122b42;color:#d9e5ee}
+.history-table tr.buy-row td:nth-child(3){color:#35d07f;font-weight:900}
+.history-table tr.sell-row td:nth-child(3){color:#ff6673;font-weight:900}
+.history-table .pnl-pos{color:#35d07f}.history-table .pnl-neg{color:#ff6673}
+.empty-history{text-align:center;color:#7891a8!important;padding:14px!important}
+.executed-highlight{margin-top:9px;border:1px solid #35d07f;background:rgba(53,208,127,.08);color:#35d07f;border-radius:8px;padding:9px;font-size:11px;font-weight:800}
+.current-price-marker{stroke:#ffffff;stroke-width:1.5;stroke-dasharray:5 4;opacity:.9}
+.pending-highlight{margin-top:9px;border:1px solid #f4c95d;background:rgba(244,201,93,.08);color:#f4c95d;border-radius:8px;padding:9px;font-size:11px;font-weight:800}
+.position-box{margin-top:12px;border-top:1px solid #19324a;padding-top:12px}
+.row{display:flex;justify-content:space-between;margin:7px 0;font-size:12px;color:#91a8bc}
+.row b{color:#edf5fb}
+.small{font-size:11px;color:#7891a8}
+
+.leaderboard{margin-top:14px;background:#0b1b2d;border:1px solid #1b3550;border-radius:13px;padding:14px}.leader-head{display:flex;justify-content:space-between;align-items:center}.leader-title{font-size:16px;font-weight:900}.leader-sub{font-size:11px;color:#7891a8;margin-top:3px}.leader-table{width:100%;border-collapse:collapse;margin-top:10px;font-size:12px}.leader-table th{background:#102b44;color:#9eb5c9;padding:8px;text-align:center}.leader-table td{border-bottom:1px solid #17324b;padding:8px;text-align:center}.leader-table tr:first-child td{font-weight:900}.rank1{color:#f4c95d}.rank2{color:#c8d2dc}.rank3{color:#d99a6c}.end-btn{display:none;margin-top:10px;width:100%;border:0;border-radius:9px;background:#f4c95d;color:#071727;padding:12px;font-weight:900}.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:20;align-items:center;justify-content:center;padding:20px}.modal{width:min(430px,100%);background:#0b1b2d;border:1px solid #31506d;border-radius:14px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.5)}.modal h2{margin:0 0 5px}.modal p{color:#91a8bc;font-size:12px}.modal input{width:100%;border:1px solid #24435f;background:#071727;color:#fff;border-radius:9px;padding:11px;margin:8px 0}.modal button{width:100%;border:0;border-radius:9px;padding:11px;font-weight:900;margin-top:8px}.submit-score{background:#35d07f;color:#062016}.skip-score{background:#16314b;color:#fff}.sound-btn{position:fixed;right:18px;bottom:18px;z-index:15;border:1px solid #31506d;background:#0b1b2d;color:#fff;border-radius:10px;padding:9px 12px;font-weight:800;cursor:pointer}.winner-box{display:none;margin-top:10px;padding:12px;border:1px solid #f4c95d;border-radius:10px;background:#182a1e}.winner-box strong{color:#f4c95d}.phone-input{display:none}
+@media(max-width:950px){.stats{grid-template-columns:repeat(3,1fr)}.main{grid-template-columns:1fr}.chart-wrap{height:440px}}
+@media(max-width:600px){.stats{grid-template-columns:repeat(2,1fr)}.app{padding:10px}.two{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div>
+      <div class="brand">Trading Game V26</div>
+      <div class="sub">Random starting price ₹10–₹1,000 · 100 candles already completed · Continue up to 500 candles</div>
+    </div>
+    <button class="new" onclick="newGame()">↻ New Game</button>
+  </div>
+
+  <div class="stats">
+    <div class="card"><div class="label">Capital</div><div class="value" id="capital">₹100,000.00</div></div>
+    <div class="card"><div class="label">Equity</div><div class="value" id="equity">₹100,000.00</div></div>
+    <div class="card"><div class="label">Return</div><div class="value" id="return">+0.00%</div></div>
+    <div class="card"><div class="label">Position</div><div class="value" id="positionStat">NONE</div></div>
+    <div class="card"><div class="label">Trades</div><div class="value" id="trades">0</div></div>
+    <div class="card"><div class="label">Candle</div><div class="value" id="candleNo">100 / 200</div></div>
+  </div>
+
+  <div class="main">
+    <div class="panel">
+      <div class="chart-head">
+        <div>
+          <div class="chart-title">Price Chart</div>
+          <div class="chart-sub" id="chartSub">100 candles already completed · Reveal one new candle at a time · Engine: 100 coin flips</div>
+        </div>
+        <div class="price" id="priceNow">₹100.00</div>
+      </div>
+      <div class="chart-wrap"><svg id="chart" preserveAspectRatio="none"></svg></div>
+      <div class="progress"><div id="progress"></div></div>
+      <div class="history-panel">
+        <div class="history-head">
+          <div>
+            <div class="chart-title">Trade History</div>
+            <div class="chart-sub">Executed BUY / SELL transactions by candle index</div>
+          </div>
+          <div class="small" id="historyCount">0 trades</div>
+        </div>
+        <div class="history-table-wrap">
+          <table class="history-table">
+            <thead><tr><th>#</th><th>Index</th><th>Action</th><th>Qty</th><th>Price</th><th>P&amp;L</th></tr></thead>
+            <tbody id="tradeHistoryBody"><tr><td colspan="6" class="empty-history">No trades yet</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="panel">
+      <div class="side-title">Trading Controls</div>
+      <div class="status" id="statusBox"><strong>No open position</strong>You are in cash. Wait for your setup.</div>
+
+      <div class="decision">Trading Decision</div>
+      <div class="mode-grid">
+        <button id="buyMode" onclick="selectMode('BUY')">BUY</button>
+        <button id="sellMode" onclick="selectMode('SELL')">SELL</button>
+        <button id="waitMode" class="wait" onclick="selectMode('WAIT')">NO TRADE</button>
+      </div>
+
+      <div id="buyFields" class="fields" style="display:none">
+        <div class="order-note">BUY: you can buy multiple times. Each executed BUY is added to your position and the average entry is recalculated. Leave price blank for next candle OPEN, or enter a BUY LIMIT price.</div>
+        <div class="two">
+          <div class="field"><label>Buy Price (optional)</label><input id="buyPrice" type="number" step="0.01" placeholder="Blank = next open"></div>
+          <div class="field"><label>Quantity</label><input id="buyQty" type="number" min="1" step="1" placeholder="e.g. 20"></div>
+        </div>
+        <div class="two">
+          <div class="field"><label>Stop Loss (optional)</label><input id="buySL" type="number" step="0.01" placeholder="e.g. 850"></div>
+          <div class="field"><label>Target (optional)</label><input id="buyTarget" type="number" step="0.01" placeholder="e.g. 1000"></div>
+        </div>
+        <button class="action place-buy" onclick="placeBuy()">PLACE BUY ORDER</button>
+        <button class="action cancel" onclick="cancelOrder()">CANCEL ORDER</button>
+        <div class="small" id="buyInfo"></div>
+      </div>
+
+      <div id="sellFields" class="fields" style="display:none">
+        <div class="order-note">SELL: leave price blank for execution at the next candle OPEN. Enter a price for a SELL LIMIT order.</div>
+        <div class="two">
+          <div class="field"><label>Sell Price (optional)</label><input id="sellPrice" type="number" step="0.01" placeholder="Blank = next open"></div>
+          <div class="field"><label>Quantity <span id="sellMax" style="color:#7891a8"></span></label><input id="sellQty" type="number" min="1" step="1" placeholder="e.g. 5" oninput="validateSellQty()"></div>
+        </div>
+        <button class="action place-sell" onclick="placeSell()">PLACE SELL ORDER</button>
+        <button class="action cancel" onclick="cancelOrder()">CANCEL ORDER</button>
+        <div class="small" id="sellInfo"></div>
+      </div>
+
+      <button class="action next" onclick="nextCandle()">REVEAL NEXT CANDLE</button>
+
+      <div class="position-box" id="positionControls" style="display:none">
+        <div class="side-title">Open Position Risk Controls</div>
+        <div class="two">
+          <div class="field"><label>Stop Loss</label><input id="editSL" type="number" step="0.01" placeholder="Optional"></div>
+          <div class="field"><label>Target</label><input id="editTarget" type="number" step="0.01" placeholder="Optional"></div>
+        </div>
+        <button class="action cancel" onclick="updateRisk()">UPDATE SL / TARGET</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="leaderboard">
+    <div class="leader-head"><div><div class="leader-title">🌍 Global High Scores</div><div class="leader-sub">Highest final capital — finish anytime or at 500 candles</div></div><div class="small" id="leaderStatus">Loading...</div></div>
+    <table class="leader-table"><thead><tr><th>Rank</th><th>Player</th><th>Final Capital</th><th>Return</th></tr></thead><tbody id="leaderboardBody"><tr><td colspan="4" class="empty-history">Loading global scores...</td></tr></tbody></table>
+  </div>
+</div>
+
+<button id="endGameBtn" class="end-btn" onclick="finishGame()">🏁 END GAME &amp; SUBMIT SCORE</button>
+<button id="soundBtn" class="sound-btn" onclick="toggleSound()">🔊 Sound ON</button>
+
+<div id="scoreModal" class="modal-backdrop">
+  <div class="modal">
+    <h2>🏆 Game Complete!</h2>
+    <p id="finalScoreText"></p>
+    <input id="playerName" maxlength="20" placeholder="Enter your name">
+    <button class="submit-score" onclick="submitScore()">SUBMIT TO GLOBAL HIGH SCORES</button>
+    <div id="winnerBox" class="winner-box"></div>
+    <input id="winnerPhone" class="phone-input" maxlength="15" inputmode="tel" placeholder="Enter contact number to claim your prize">
+    <button id="winnerSubmit" class="submit-score phone-input" onclick="saveWinnerContact()">SAVE CONTACT &amp; CLAIM PRIZE</button>
+    <button class="skip-score" onclick="closeScoreModal()">CLOSE</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL="https://phxestbzmpovofdkroyf.supabase.co";
+const SUPABASE_KEY="sb_publishable__WQrs4O5odXQOOmiNgA-0g_9geF0fPU";
+const supabaseClient=(window.supabase&&SUPABASE_KEY.length>20)?window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY):null;
+const START_CAPITAL=100000, MAX_CANDLES=500;
+let state={};
+let soundEnabled=true;
+let audioCtx=null;
+
+function getAudio(){
+  if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state === "suspended") audioCtx.resume();
+  return audioCtx;
+}
+function tone(freq,duration=0.08,type="sine",volume=0.035,delay=0){
+  if(!soundEnabled)return;
+  try{const a=getAudio(),o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(0,a.currentTime+delay);g.gain.linearRampToValueAtTime(volume,a.currentTime+delay+0.01);g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+delay+duration);o.connect(g);g.connect(a.destination);o.start(a.currentTime+delay);o.stop(a.currentTime+delay+duration+0.02);}catch(e){}
+}
+function soundReveal(){tone(520,.06,"triangle",.025);tone(680,.08,"triangle",.025,.07);}
+function soundBuy(){tone(660,.08,"sine",.04);tone(880,.11,"sine",.04,.08);}
+function soundSell(){tone(740,.08,"sine",.04);tone(520,.12,"sine",.04,.08);}
+function soundEnd(){tone(523,.12,"triangle",.045);tone(659,.12,"triangle",.045,.13);tone(784,.18,"triangle",.05,.26);}
+function soundWinner(){tone(523,.12,"triangle",.055);tone(659,.12,"triangle",.055,.12);tone(784,.12,"triangle",.055,.24);tone(1047,.28,"triangle",.06,.36);}
+function toggleSound(){soundEnabled=!soundEnabled;document.getElementById("soundBtn").textContent=soundEnabled?"🔊 Sound ON":"🔇 Sound OFF";if(soundEnabled)getAudio();}
+
+function money(v){return "₹"+Number(v).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2});}
+function pct(v){return (v>=0?"+":"")+v.toFixed(2)+"%";}
+function flip(){return Math.random()<0.5?1:-1;}
+function flip100(){let n=0;for(let i=0;i<100;i++)n+=flip();return n;}
+function initialPrice(){return 10+Math.random()*990;}
+
+/*
+  MARKET ENGINE
+  Every OPEN is independently generated from the previous CLOSE using 100 flips.
+  Every candle BODY is then generated using another 100 flips:
+  +0.2% for heads, -0.2% for tails.
+*/
+function nextOpen(previousClose){
+  const net=flip100();
+  return Math.max(10,Math.min(1000,previousClose*(1+net*0.002)));
+}
+function makeCandle(open){
+  const net=flip100();
+  const close=open*(1+net*0.002);
+
+  // Intraday range gives the candle a real high/low so limit orders can be touched.
+  const body=Math.abs(close-open);
+  const wick=Math.max(open*0.002,body*0.18);
+  const high=Math.max(open,close)+wick;
+  const low=Math.max(0.01,Math.min(open,close)-wick);
+
+  return {open,high,low,close,netFlips:net};
+}
+
+function newGame(){
+  state={
+    capital:START_CAPITAL,
+    initialCapital:START_CAPITAL,
+    candle:100,
+    candles:[],
+    position:null,
+    pendingBuy:null,
+    pendingSell:null,
+    trades:[],
+    mode:"WAIT",
+    gameOver:false,
+    scoreSubmitted:false
+  };
+
+  let open=initialPrice();
+
+  for(let i=0;i<100;i++){
+    // The opening price of candle 1 is random; every following opening
+    // price is generated by the same 100-flip engine.
+    if(i>0) open=nextOpen(state.candles[i-1].close);
+    state.candles.push(makeCandle(open));
+  }
+
+  clearInputs();
+  const historyBody=document.getElementById("tradeHistoryBody");
+  const historyCount=document.getElementById("historyCount");
+  if(historyBody) historyBody.innerHTML='<tr><td colspan="6" class="empty-history">No trades yet</td></tr>';
+  if(historyCount) historyCount.textContent="0 trades";
+  render();
+  setMessage("100 candles are ready. Choose BUY, SELL or NO TRADE, then advance one candle at a time.");
+}
+
+function current(){return state.candles[state.candle-1];}
+function currentPrice(){return current().close;}
+
+function setMessage(text){
+  const box=document.getElementById("statusBox");
+  let html="";
+
+  if(state.position){
+    const p=state.position, px=currentPrice(), pnl=(px-p.entry)*p.qty;
+    html='<strong>● LONG POSITION</strong>'+
+      '<div class="row"><span>Entry</span><b>'+money(p.entry)+'</b></div>'+
+      '<div class="row"><span>Investment</span><b>'+money(p.investment)+'</b></div>'+
+      '<div class="row"><span>Quantity Held</span><b>'+p.qty+'</b></div>'+
+      '<div class="row"><span>Unrealized P&L</span><b class="'+(pnl>=0?'green':'red')+'">'+money(pnl)+' ('+pct(pnl/p.investment*100)+')</b></div>'+
+      '<div class="row"><span>Stop Loss</span><b>'+(p.stop===null?"—":money(p.stop))+'</b></div>'+
+      '<div class="row"><span>Target</span><b>'+(p.target===null?"—":money(p.target))+'</b></div>';
+
+    if(state.pendingSell){
+      html+='<div style="margin-top:10px;color:#f4c95d">Pending SELL: '+state.pendingSell.qty+
+        ' share'+(state.pendingSell.qty===1?'':'s')+
+        (state.pendingSell.price===null?' @ next candle OPEN':' @ '+money(state.pendingSell.price))+
+        '</div>';
+    }
+    html+='<div style="margin-top:10px;color:#9bb0c1">'+text+'</div>';
+  }else{
+    html='<strong>No open position</strong>'+text;
+    if(state.pendingBuy) html+='<div style="margin-top:8px;color:#f4c95d">Pending BUY order: '+state.pendingBuy.qty+
+      ' share'+(state.pendingBuy.qty===1?'':'s')+
+      (state.pendingBuy.price==null?' @ next open':' @ '+money(state.pendingBuy.price))+'</div>';
+  }
+  box.innerHTML=html;
+}
+function selectMode(mode){
+  if(state.gameOver)return;
+
+  // BUY is allowed both with no position and with an existing LONG position.
+  // A new BUY is added to the existing quantity and the average entry is recalculated.
+  if(mode==="SELL" && !state.position){
+    setMessage("No open position. Select BUY to enter a position.");
+    return;
+  }
+
+  if(mode==="WAIT"){
+    state.mode="WAIT";
+    state.pendingBuy=null;
+    state.pendingSell=null;
+    clearOrderInputs();
+  }else{
+    state.mode=mode;
+  }
+  updateUI();
+}
+
+function updateUI(){
+  document.getElementById("buyMode").className=state.mode==="BUY"?"active-buy":"";
+  document.getElementById("sellMode").className=state.mode==="SELL"?"active-sell":"";
+  document.getElementById("waitMode").className=state.mode==="WAIT"?"active-wait":"";
+
+  document.getElementById("buyFields").style.display=(state.mode==="BUY")?"block":"none";
+  document.getElementById("sellFields").style.display=(state.position && state.mode==="SELL")?"block":"none";
+  if(!state.position) document.getElementById("sellMax").textContent="";
+  document.getElementById("positionControls").style.display=state.position?"block":"none";
+
+  if(state.position){
+    document.getElementById("sellQty").max=state.position.qty;
+    document.getElementById("sellMax").textContent="(max "+state.position.qty+")";
+    validateSellQty();
+    document.getElementById("editSL").value=state.position.stop??"";
+    document.getElementById("editTarget").value=state.position.target??"";
+  }
+
+  if(state.pendingBuy){
+    document.getElementById("buyInfo").textContent="Order pending — click NEXT CANDLE to let the market test it.";
+  }else document.getElementById("buyInfo").textContent="";
+
+  if(state.pendingSell){
+    const o=state.pendingSell;
+    document.getElementById("sellInfo").textContent = o.price===null
+      ? "PENDING: sell "+o.qty+" at the next candle OPEN."
+      : "PENDING: sell "+o.qty+" at limit "+money(o.price)+" when touched.";
+  }else document.getElementById("sellInfo").textContent="";
+}
+
+function clearInputs(){
+  ["buyPrice","buyQty","buySL","buyTarget","sellPrice","sellQty","editSL","editTarget"].forEach(id=>{
+    const el=document.getElementById(id); if(el)el.value="";
+  });
+}
+function clearOrderInputs(){
+  ["buyPrice","buyQty","buySL","buyTarget","sellPrice","sellQty"].forEach(id=>{
+    const el=document.getElementById(id); if(el)el.value="";
+  });
+}
+
+function placeBuy(){
+  const qty=Math.floor(Number(document.getElementById("buyQty").value));
+  const pr=document.getElementById("buyPrice").value.replace(/\u00a0/g," ").trim();
+  const slr=document.getElementById("buySL").value.trim();
+  const tr=document.getElementById("buyTarget").value.trim();
+
+  if(!Number.isInteger(qty)||qty<=0){
+    setMessage("Enter a whole-number BUY quantity.");
+    return;
+  }
+
+  const price=pr===""?null:Number(pr);
+  const stop=slr===""?null:Number(slr);
+  const target=tr===""?null:Number(tr);
+
+  if(price!==null&&(!Number.isFinite(price)||price<=0)){
+    setMessage("Enter a valid BUY price or leave it blank.");
+    return;
+  }
+
+  const reference=price??currentPrice();
+
+  if(stop!==null&&(!Number.isFinite(stop)||stop>=reference)){
+    setMessage("BUY stop loss must be below the entry price.");
+    return;
+  }
+  if(target!==null&&(!Number.isFinite(target)||target<=reference)){
+    setMessage("BUY target must be above the entry price.");
+    return;
+  }
+
+  if(price!==null&&price*qty>state.capital){
+    setMessage("Not enough available capital for this BUY quantity at the requested price.");
+    return;
+  }
+
+  // Only one pending BUY order is maintained at a time.
+  // A later BUY can be placed after this one executes.
+  state.pendingBuy={qty,price,stop,target,market:(price===null)};
+  state.mode="BUY";
+
+  if(state.position){
+    setMessage("Additional BUY order placed. Click NEXT CANDLE to advance the market; if conditions are met, the new quantity will be added to your existing LONG position.");
+  }else{
+    setMessage("BUY order placed. Click NEXT CANDLE to advance the market and execute it.");
+  }
+
+  render();
+}
+
+function placeSell(){
+  if(!state.position){
+    setMessage("There is no open position to sell.");
+    return;
+  }
+
+  const qtyRaw=document.getElementById("sellQty").value.trim();
+  const qty=Math.floor(Number(qtyRaw));
+  const pr=document.getElementById("sellPrice").value.trim();
+
+  if(!qtyRaw || !Number.isInteger(qty) || qty<=0){
+    setMessage("Enter a whole-number SELL quantity.");
+    return;
+  }
+
+  if(qty>state.position.qty){
+    setMessage("SELL rejected: you hold only "+state.position.qty+" share"+(state.position.qty===1?"":"s")+". You cannot sell "+qty+".");
+    document.getElementById("sellQty").value=state.position.qty;
+    validateSellQty();
+    return;
+  }
+
+  const price=pr===""?null:Number(pr);
+  if(price!==null&&(!Number.isFinite(price)||price<=0)){
+    setMessage("Enter a valid SELL price or leave it blank.");
+    return;
+  }
+
+  /*
+    SELL execution rule:
+    - Blank price: sell at the NEXT candle OPEN.
+    - Entered price:
+        * If next candle opens at or ABOVE the sell price, execute at OPEN.
+        * Otherwise, if the candle HIGH reaches the sell price, execute at the limit price.
+        * Otherwise the order remains pending.
+    This mirrors the BUY limit logic.
+  */
+  state.pendingSell={qty,price};
+  state.mode="SELL";
+  setMessage(
+    price===null
+      ? "SELL order placed: "+qty+" share"+(qty===1?"":"s")+" will sell at the next candle OPEN."
+      : "SELL limit placed: "+qty+" share"+(qty===1?"":"s")+" @ "+money(price)+". REVEAL NEXT CANDLE will test the order."
+  );
+  render();
+}
+function cancelOrder(){
+  state.pendingBuy=null;
+  state.pendingSell=null;
+  setMessage("Pending order cancelled.");
+  render();
+}
+
+function updateRisk(){
+  if(!state.position)return;
+  const slr=document.getElementById("editSL").value.trim();
+  const tr=document.getElementById("editTarget").value.trim();
+  const sl=slr===""?null:Number(slr);
+  const target=tr===""?null:Number(tr);
+
+  if(sl!==null&&(!Number.isFinite(sl)||sl>=state.position.entry)){setMessage("Stop loss must be below entry.");return;}
+  if(target!==null&&(!Number.isFinite(target)||target<=state.position.entry)){setMessage("Target must be above entry.");return;}
+
+  state.position.stop=sl;
+  state.position.target=target;
+  setMessage("Stop loss / target updated.");
+  render();
+}
+
+function nextCandle(){
+  soundReveal();
+  if(state.gameOver) return;
+
+  // The market can continue from candle 100 up to candle 500.
+  if(state.candle >= MAX_CANDLES){
+    finishGame();
+    return;
+  }
+
+  // IMPORTANT: exactly one new candle is created for every REVEAL NEXT CANDLE click.
+  const previous = state.candles[state.candles.length - 1];
+  const open = nextOpen(previous.close);
+  const c = makeCandle(open);
+
+  state.candles.push(c);
+  state.candle = state.candles.length;
+
+  let actionMessage = "Candle "+state.candle+" revealed.";
+
+  // ---------------------------------------------------------
+  // BUY ORDER EXECUTION
+  // ---------------------------------------------------------
+  if(state.pendingBuy){
+    const o = state.pendingBuy;
+    let fill = null;
+
+    // Blank BUY price = market order at the NEW candle OPEN.
+    // Blank price = MARKET BUY. It MUST execute at the newly revealed
+    // candle OPEN, regardless of the candle direction.
+    if(o.price === null || o.price === undefined || o.price === ""){
+      fill = Number(c.open);
+    }
+    // BUY LIMIT:
+    // Gap below limit -> fill at the better OPEN.
+    // Otherwise fill at the requested price if the candle touches it.
+    else if(Number(c.open) <= Number(o.price)){
+      fill = Number(c.open);
+    }
+    else if(Number(c.low) <= Number(o.price)){
+      fill = Number(o.price);
+    }
+
+    if(fill !== null){
+      const cost = fill * o.qty;
+
+      if(cost <= state.capital + 1e-9){
+        state.capital -= cost;
+
+        if(!state.position){
+          state.position = {
+            entry: fill,
+            qty: o.qty,
+            investment: cost,
+            stop: o.stop,
+            target: o.target,
+            entryCandle: state.candle
+          };
+        }else{
+          // Multiple BUYs are allowed. Add the new quantity and
+          // calculate the weighted-average entry price.
+          const p = state.position;
+          const oldQty = p.qty;
+          const newQty = oldQty + o.qty;
+
+          p.entry = ((p.entry * oldQty) + (fill * o.qty)) / newQty;
+          p.qty = newQty;
+          p.investment += cost;
+
+          if(o.stop !== null) p.stop = o.stop;
+          if(o.target !== null) p.target = o.target;
+        }
+
+        recordTrade({type:"BUY", candle:state.candle, qty:o.qty, price:fill, pnl:null});
+
+        state.pendingBuy = null;
+        state.mode = "WAIT";
+
+        actionMessage =
+          "✓ MARKET BUY EXECUTED @ NEXT OPEN "+money(fill)+
+          " · Qty "+o.qty+
+          " · Total held "+state.position.qty+
+          " · Avg entry "+money(state.position.entry);
+      }else{
+        actionMessage =
+          "BUY reached its price, but available capital is insufficient. "+
+          "The order remains active.";
+      }
+    }else{
+      actionMessage =
+        "Candle "+state.candle+" revealed · BUY order still waiting for its price.";
+    }
+  }
+
+  // ---------------------------------------------------------
+  // POSITION RISK CHECKS
+  // ---------------------------------------------------------
+  if(state.position){
+    const p = state.position;
+
+    if(p.stop !== null){
+      if(c.open <= p.stop){
+        closeAll(c.open,"STOP LOSS");
+        updateUI();
+        renderTradeHistory();
+        if(state.candle >= MAX_CANDLES && !state.gameOver) finishGame();
+        requestAnimationFrame(drawChart);
+        return;
+      }
+      if(c.low <= p.stop){
+        closeAll(p.stop,"STOP LOSS");
+        updateUI();
+        renderTradeHistory();
+        if(state.candle >= MAX_CANDLES && !state.gameOver) finishGame();
+        requestAnimationFrame(drawChart);
+        return;
+      }
+    }
+
+    if(p.target !== null){
+      if(c.open >= p.target){
+        closeAll(c.open,"TARGET");
+        updateUI();
+        renderTradeHistory();
+        requestAnimationFrame(drawChart);
+        return;
+      }
+      if(c.high >= p.target){
+        closeAll(p.target,"TARGET");
+        updateUI();
+        renderTradeHistory();
+        requestAnimationFrame(drawChart);
+        return;
+      }
+    }
+  }
+
+  // ---------------------------------------------------------
+  // SELL ORDER EXECUTION
+  // ---------------------------------------------------------
+  if(state.position && state.pendingSell){
+    const o = state.pendingSell;
+    let fill = null;
+
+    if(o.price === null){
+      fill = c.open;
+    }else if(c.open >= o.price){
+      fill = c.open;
+    }else if(c.high >= o.price){
+      fill = o.price;
+    }
+
+    if(fill !== null){
+      sellQuantity(o.qty,fill);
+      requestAnimationFrame(drawChart);
+      return;
+    }else{
+      actionMessage =
+        "Candle "+state.candle+" revealed · SELL order still waiting for its price.";
+    }
+  }
+
+  setMessage(actionMessage);
+
+  // One final render guarantees that:
+  // 1. the new candle is visible,
+  // 2. P&L is updated,
+  // 3. candle counter advances,
+  // 4. trade history is refreshed.
+  render();
+
+  // Automatically end and open the score dialog when the maximum candle is reached.
+  if(state.candle >= MAX_CANDLES && !state.gameOver){
+    finishGame();
+  }
+
+  requestAnimationFrame(()=>{
+    drawChart();
+    renderTradeHistory();
+  });
+}
+
+function sellQuantity(qty,price){
+  if(!state.position)return;
+  if(qty>state.position.qty){setMessage("Cannot sell more than the quantity held.");return;}
+
+  const p=state.position;
+  const pnl=(price-p.entry)*qty;
+  state.capital+=price*qty;
+
+  recordTrade({type:"SELL",candle:state.candle,qty,price,pnl});
+
+  p.qty-=qty;
+  p.investment-=p.entry*qty;
+  state.pendingSell=null;
+  state.mode="WAIT";
+
+  if(p.qty===0){
+    state.position=null;
+    setMessage("SELL executed at "+money(price)+" · Realized P&L "+money(pnl)+".");
+  }else{
+    setMessage("SELL executed at "+money(price)+" · Remaining quantity: "+p.qty+" · P&L "+money(pnl)+".");
+  }
+  render();
+  if(state.candle >= MAX_CANDLES && !state.gameOver) finishGame();
+}
+
+function closeAll(price,reason){
+  if(!state.position)return;
+  const p=state.position;
+  const qty=p.qty;
+  const pnl=(price-p.entry)*qty;
+
+  state.capital+=price*qty;
+  recordTrade({type:"SELL",candle:state.candle,qty,price,pnl,reason});
+  state.position=null;
+  state.pendingSell=null;
+  state.mode="WAIT";
+
+  setMessage(reason+" triggered at "+money(price)+" · P&L "+money(pnl)+".");
+  render();
+  if(state.candle >= MAX_CANDLES && !state.gameOver) finishGame();
+}
+
+function equity(){
+  if(!state.position)return state.capital;
+  return state.capital+state.position.investment+(currentPrice()-state.position.entry)*state.position.qty;
+}
+
+function render(){
+  drawChart();
+
+  const px=currentPrice();
+  const eq=equity();
+  const ret=(eq/state.initialCapital-1)*100;
+
+  document.getElementById("capital").textContent=money(state.capital);
+  document.getElementById("equity").textContent=money(eq);
+  document.getElementById("return").textContent=pct(ret);
+  document.getElementById("return").className="value "+(ret>0?"green":ret<0?"red":"");
+  document.getElementById("positionStat").textContent=state.position?"LONG":"NONE";
+  document.getElementById("positionStat").className="value "+(state.position?"yellow":"");
+  document.getElementById("trades").textContent=state.trades.length;
+  document.getElementById("candleNo").textContent=state.candle+" / "+MAX_CANDLES;
+  document.getElementById("priceNow").textContent=money(px);
+  document.getElementById("progress").style.width=(state.candle/MAX_CANDLES*100)+"%";
+
+  if(state.position){
+    const p=state.position,pnl=(px-p.entry)*p.qty;
+    let pending="";
+    if(state.pendingBuy){
+      pending+=`<div class="pending-highlight">● BUY ORDER ACTIVE · Qty ${state.pendingBuy.qty} · ${state.pendingBuy.price===null?"MARKET · NEXT OPEN":money(state.pendingBuy.price)}</div>`;
+    }
+    if(state.pendingSell){
+      pending+=`<div class="pending-highlight">● SELL ORDER ACTIVE · Qty ${state.pendingSell.qty} · ${state.pendingSell.price===null?"NEXT OPEN":money(state.pendingSell.price)}</div>`;
+    }
+    document.getElementById("statusBox").innerHTML=`
+      <strong>● LONG POSITION</strong>
+      <div class="row"><span>Average Entry</span><b>${money(p.entry)}</b></div>
+      <div class="row"><span>Total Investment</span><b>${money(p.investment)}</b></div>
+      <div class="row"><span>Quantity Held</span><b>${p.qty}</b></div>
+      <div class="row"><span>Unrealized P&amp;L</span><b class="${pnl>=0?"green":"red"}">${money(pnl)} (${pct(pnl/p.investment*100)})</b></div>
+      <div class="row"><span>Stop Loss</span><b>${p.stop===null?"—":money(p.stop)}</b></div>
+      <div class="row"><span>Target</span><b>${p.target===null?"—":money(p.target)}</b></div>
+      ${pending}`;
+  } else if(state.pendingBuy){
+    document.getElementById("statusBox").innerHTML=`
+      <strong>● BUY ORDER ACTIVE</strong>
+      <div class="row"><span>Quantity</span><b>${state.pendingBuy.qty}</b></div>
+      <div class="row"><span>Price</span><b>${state.pendingBuy.price===null?"MARKET · NEXT OPEN":money(state.pendingBuy.price)}</b></div>
+      <div class="pending-highlight">● BUY ORDER ACTIVE · Waiting for execution</div>`;
+  }
+
+  updateUI();
+  drawChart();
+  renderTradeHistory();
+
+  const endBtn=document.getElementById("endGameBtn");
+  if(endBtn){
+    endBtn.style.display=(state.candle>=100&&!state.gameOver)?"block":"none";
+  }
+}
+
+
+function drawChart(){
+  const svg=document.getElementById("chart");
+  const rect=svg.getBoundingClientRect();
+  const W=Math.max(600,rect.width||900),H=Math.max(350,rect.height||550);
+  const data=state.candles.slice(0,state.candle);
+
+  const min=Math.min(...data.map(c=>c.low));
+  const max=Math.max(...data.map(c=>c.high));
+  const range=Math.max(max-min,0.000001);
+
+  const left=58,right=18,top=22,bottom=34;
+  const cw=W-left-right,ch=H-top-bottom;
+  const step=cw/data.length;
+  const body=Math.max(2,Math.min(10,step*.62));
+
+  const y=v=>top+(max-v)/range*ch;
+  const x=i=>left+(i+.5)*step;
+
+  let s="";
+  s+='<rect width="100%" height="100%" fill="#071727"/>';
+
+  for(let i=0;i<5;i++){
+    const yy=top+i*ch/4;
+    const val=max-i*range/4;
+    s+=`<line x1="${left}" y1="${yy}" x2="${W-right}" y2="${yy}" stroke="#183047" stroke-width="1"/>`;
+    s+=`<text x="7" y="${yy+4}" fill="#71879a" font-size="11">${val.toFixed(2)}</text>`;
+  }
+
+  data.forEach((c,i)=>{
+    const xx=x(i), up=c.close>=c.open;
+    const col=up?"#35d07f":"#ff6673";
+    s+=`<line x1="${xx}" y1="${y(c.high)}" x2="${xx}" y2="${y(c.low)}" stroke="${col}" stroke-width="1.3"/>`;
+    const yy=y(Math.max(c.open,c.close));
+    const hh=Math.max(2,y(Math.min(c.open,c.close))-yy);
+    s+=`<rect x="${xx-body/2}" y="${yy}" width="${body}" height="${hh}" rx="1" fill="${col}"/>`;
+  });
+
+  // Current price line
+  const py=y(currentPrice());
+  s+=`<line x1="${left}" y1="${py}" x2="${W-right}" y2="${py}" stroke="#4ea1ff" stroke-width="1" stroke-dasharray="4 4"/>`;
+
+  if(state.position){
+    const ey=y(state.position.entry);
+    s+=`<line x1="${left}" y1="${ey}" x2="${W-right}" y2="${ey}" stroke="#f4c95d" stroke-width="1.5" stroke-dasharray="6 4"/>`;
+  }
+
+  // "Now" marker
+  const nx=x(data.length-1);
+  s+=`<line x1="${nx}" y1="${top}" x2="${nx}" y2="${H-bottom}" stroke="#4ea1ff" stroke-width="1" stroke-dasharray="3 5"/>`;
+  s+=`<text x="${Math.min(nx+5,W-right-70)}" y="${top+14}" fill="#4ea1ff" font-size="10" font-weight="700">CANDLE ${state.candle}</text>`;
+
+  svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  svg.innerHTML=s;
+}
+
+
+function recordTrade(trade){
+  // Single source of truth: store the transaction AND immediately render it.
+  // This prevents the history UI from depending on a later render cycle.
+  if(!Array.isArray(state.trades)) state.trades=[];
+  state.trades.push(trade);
+
+  const body=document.getElementById("tradeHistoryBody");
+  const count=document.getElementById("historyCount");
+  if(count) count.textContent=state.trades.length+" trade"+(state.trades.length===1?"":"s");
+  if(!body) return;
+
+  // Remove the empty placeholder if this is the first transaction.
+  if(state.trades.length===1) body.replaceChildren();
+
+  const tr=document.createElement("tr");
+  tr.className=trade.type==="BUY"?"buy-row":"sell-row";
+  [state.trades.length, trade.candle??"—", trade.type??"—", trade.qty??"—",
+   typeof trade.price==="number"?money(trade.price):"—",
+   trade.pnl==null?"—":money(Number(trade.pnl))].forEach((value,idx)=>{
+    const td=document.createElement("td");
+    td.textContent=String(value);
+    if(idx===5 && trade.pnl!=null) td.className=Number(trade.pnl)>=0?"pnl-pos":"pnl-neg";
+    tr.appendChild(td);
+  });
+  body.appendChild(tr);
+  body.parentElement.scrollTop=body.parentElement.scrollHeight;
+}
+
+function renderTradeHistory(){
+  const body=document.getElementById("tradeHistoryBody");
+  const count=document.getElementById("historyCount");
+  if(!body) return;
+
+  const trades = Array.isArray(state.trades) ? state.trades : [];
+
+  if(count){
+    count.textContent = trades.length + " trade" + (trades.length===1 ? "" : "s");
+  }
+
+  // Build the rows with DOM methods instead of innerHTML so the history
+  // cannot fail because of formatting/template-string issues.
+  body.replaceChildren();
+
+  if(trades.length===0){
+    const tr=document.createElement("tr");
+    const td=document.createElement("td");
+    td.colSpan=6;
+    td.className="empty-history";
+    td.textContent="No trades yet";
+    tr.appendChild(td);
+    body.appendChild(tr);
+    return;
+  }
+
+  trades.forEach((t,i)=>{
+    const tr=document.createElement("tr");
+    tr.className = t.type === "BUY" ? "buy-row" : "sell-row";
+
+    const values=[
+      i+1,
+      t.candle ?? "—",
+      t.type ?? "—",
+      t.qty ?? "—",
+      (typeof t.price === "number" ? money(t.price) : "—"),
+      (t.pnl===null || t.pnl===undefined ? "—" : money(Number(t.pnl)))
+    ];
+
+    values.forEach((value,idx)=>{
+      const td=document.createElement("td");
+      td.textContent=String(value);
+      if(idx===5 && t.pnl!==null && t.pnl!==undefined){
+        td.className=Number(t.pnl)>=0 ? "pnl-pos" : "pnl-neg";
+      }
+      tr.appendChild(td);
+    });
+    body.appendChild(tr);
+  });
+}
+
+function finalCapital(){
+  // Final score is marked-to-market at the last revealed candle close.
+  return equity();
+}
+
+function finishGame(){
+  if(state.gameOver)return;
+  // Player may voluntarily end the game at any point after the initial 100 candles.
+  // If the market reaches the maximum candle, the game ends automatically.
+  if(state.candle < 100)return;
+  state.gameOver=true;
+  soundEnd();
+  const final=finalCapital();
+  const ret=(final/state.initialCapital-1)*100;
+  document.getElementById("finalScoreText").textContent=`Final capital: ${money(final)} · Return: ${pct(ret)} · Ended at candle ${state.candle}`;
+  document.querySelector("#scoreModal h2").textContent = state.candle >= MAX_CANDLES ? "🏆 Game Complete!" : "🏁 Game Ended!";
+  document.getElementById("scoreModal").style.display="flex";
+  document.getElementById("endGameBtn").style.display="none";
+  loadLeaderboard();
+}
+
+function closeScoreModal(){
+  document.getElementById("scoreModal").style.display="none";
+  document.getElementById("winnerBox").style.display="none";
+  document.getElementById("winnerPhone").style.display="none";
+  document.getElementById("winnerSubmit").style.display="none";
+  document.getElementById("winnerPhone").disabled=false;
+  document.getElementById("playerName").style.display="block";
+  document.querySelector(".submit-score").style.display="block";
+}
+
+async function submitScore(){
+  const name=(document.getElementById("playerName").value||"").trim().slice(0,20);
+  if(!name){alert("Please enter your name.");return;}
+  const final=Number(finalCapital().toFixed(2));
+  const ret=Number(((final/state.initialCapital-1)*100).toFixed(2));
+  if(!supabaseClient){alert("Global leaderboard is not connected.");return;}
+  const btn=document.querySelector(".submit-score");
+  btn.disabled=true; btn.textContent="SUBMITTING...";
+
+  // Support both database column versions used during setup.
+  let inserted=null, error=null, usedReturnColumn="return_percent";
+  let result=await supabaseClient.from("trading_game_scores")
+    .insert({player_name:name,final_capital:final,return_percent:ret,candles_played:state.candle})
+    .select("id,player_name,final_capital")
+    .single();
+  inserted=result.data; error=result.error;
+
+  // If the existing table uses the original return_percent column, retry with that schema.
+  if(error && (error.code==="42703" || /return_percent|column/i.test(error.message||""))){
+    usedReturnColumn="return_percent";
+    result=await supabaseClient.from("trading_game_scores")
+      .insert({player_name:name,final_capital:final,return_percent:ret,candles_played:state.candle})
+      .select("id,player_name,final_capital")
+      .single();
+    inserted=result.data; error=result.error;
+  }
+
+  btn.disabled=false; btn.textContent="SUBMIT TO GLOBAL HIGH SCORES";
+  if(error){
+    console.error("Score submission error:",error);
+    alert(`Could not submit score.\n\nSupabase error: ${error.message || error.code || "Unknown error"}`);
+    return;
+  }
+
+  state.scoreSubmitted=true;
+  state.submittedScoreId=inserted.id;
+  state.submittedPlayerName=name;
+
+  const returnField=usedReturnColumn;
+  let topQuery=supabaseClient.from("trading_game_scores")
+    .select(`id,player_name,final_capital,${returnField}`)
+    .order("final_capital",{ascending:false})
+    .order("id",{ascending:true})
+    .limit(1).maybeSingle();
+  const {data:top,error:topError}=await topQuery;
+
+  if(topError){
+    console.error("Leaderboard check error:",topError);
+    alert(`Score was submitted, but the leaderboard check failed.\n\nSupabase error: ${topError.message || topError.code || "Unknown error"}`);
+    closeScoreModal();
+    loadLeaderboard();
+    return;
+  }
+
+  if(top && inserted && String(top.id)===String(inserted.id)){
+    document.getElementById("winnerBox").style.display="block";
+    document.getElementById("winnerBox").innerHTML="🎉 <strong>Congratulations!</strong><br>You are #1 on the Global High Score! Please enter your contact number to claim the prize.";
+    document.getElementById("winnerPhone").style.display="block";
+    document.getElementById("winnerSubmit").style.display="block";
+    document.querySelector(".skip-score").textContent="CLOSE";
+    document.getElementById("playerName").style.display="none";
+    btn.style.display="none";
+    soundWinner();
+  }else{
+    closeScoreModal();
+  }
+  document.getElementById("leaderStatus").textContent="Updated";
+  loadLeaderboard();
+}
+
+async function saveWinnerContact(){
+  const phone=(document.getElementById("winnerPhone").value||"").trim();
+  if(!/^[0-9+()\-\s]{7,15}$/.test(phone)){alert("Please enter a valid contact number.");return;}
+  const name=state.submittedPlayerName||"Anonymous";
+  const {error}=await supabaseClient.from("trading_game_prize_claims").insert({score_id:state.submittedScoreId,player_name:name,contact_number:phone});
+  if(error){console.error(error);alert("Could not save contact number. Please try again.");return;}
+  document.getElementById("winnerBox").innerHTML="🎁 <strong>Thank you!</strong> Your contact number has been securely submitted for prize coordination.";
+  document.getElementById("winnerSubmit").style.display="none";
+  document.getElementById("winnerPhone").disabled=true;
+}
+
+async function loadLeaderboard(){
+  const body=document.getElementById("leaderboardBody");
+  if(!supabaseClient){body.innerHTML='<tr><td colspan="4" class="empty-history">Global leaderboard not configured</td></tr>';return;}
+
+  let data=null,error=null,returnField="return_percent";
+  let result=await supabaseClient.from("trading_game_scores")
+    .select("player_name,final_capital,return_percent,created_at")
+    .order("final_capital",{ascending:false}).limit(20);
+  data=result.data; error=result.error;
+
+  if(error && (error.code==="42703" || /return_percent|column/i.test(error.message||""))){
+    returnField="return_percent";
+    result=await supabaseClient.from("trading_game_scores")
+      .select("player_name,final_capital,return_percent,created_at")
+      .order("final_capital",{ascending:false}).limit(20);
+    data=result.data; error=result.error;
+  }
+
+  if(error){
+    console.error("Leaderboard error:",error);
+    body.innerHTML='<tr><td colspan="4" class="empty-history">Leaderboard unavailable</td></tr>';
+    document.getElementById("leaderStatus").textContent="Setup needed";
+    return;
+  }
+  document.getElementById("leaderStatus").textContent=`Top ${data.length}`;
+  if(!data.length){body.innerHTML='<tr><td colspan="4" class="empty-history">No scores yet. Be the first!</td></tr>';return;}
+  body.innerHTML="";
+  data.forEach((r,i)=>{
+    const tr=document.createElement("tr");
+    const rank=document.createElement("td"); rank.textContent=i+1; if(i<3) rank.className=`rank${i+1}`;
+    const player=document.createElement("td"); player.textContent=r.player_name||"Anonymous";
+    const cap=document.createElement("td"); cap.textContent=money(r.final_capital);
+    const rv=Number(r[returnField])||0;
+    const ret=document.createElement("td"); ret.textContent=pct(rv); ret.className=rv>=0?"green":"red";
+    tr.append(rank,player,cap,ret); body.appendChild(tr);
+  });
+}
+
+
+window.addEventListener("resize",()=>{if(state.candles.length)drawChart();});
+newGame();
+loadLeaderboard();
+window.addEventListener('resize',()=>{ requestAnimationFrame(()=>drawChart()); });
+</script>
+</body>
+</html>
