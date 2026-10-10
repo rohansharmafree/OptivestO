@@ -1,1 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1020">
+<title>Crypto 100 SMA Consolidation Screener</title>
+<style>
+:root{--bg:#0b1020;--panel:#121a2d;--panel2:#172238;--line:#26334d;--text:#edf3ff;--muted:#9caecc;--green:#52d6a3;--amber:#f2c66d;--red:#ff7f8b;--blue:#8ab4ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(1200px 600px at 10% -10%,#1a2d4d 0%,transparent 60%),var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+.wrap{max-width:1500px;margin:auto;padding:24px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:20px}.brand{display:flex;align-items:center;gap:12px}.logo{width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,#52d6a3,#75a7ff);display:grid;place-items:center;color:#08111f;font-size:22px;font-weight:900}.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--green);font-weight:800}.title{font-size:clamp(22px,3vw,34px);font-weight:800;letter-spacing:-.03em;margin:0}.sub{color:var(--muted);margin-top:4px}.tag{border:1px solid var(--line);background:#111a2d;padding:8px 12px;border-radius:999px;color:var(--muted);white-space:nowrap}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0}.stat,.panel{background:linear-gradient(180deg,rgba(22,33,55,.96),rgba(17,25,43,.96));border:1px solid var(--line);border-radius:16px}.stat{padding:16px}.stat .label{color:var(--muted);font-size:12px}.stat .value{font-size:26px;font-weight:800;margin-top:5px}.stat .hint{font-size:11px;color:var(--muted);margin-top:4px}
+.panel{padding:18px;margin-bottom:14px}.panel h2{font-size:15px;margin:0 0 14px}.controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}.field input,.field select{width:100%;background:#0c1425;border:1px solid #30405e;border-radius:9px;color:var(--text);padding:10px 11px;outline:none}.field input:focus,.field select:focus{border-color:var(--blue)}.checks{display:flex;flex-wrap:wrap;gap:16px;margin-top:14px;color:var(--muted);font-size:12px}.checks label{display:flex;gap:7px;align-items:center}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}.btn{border:1px solid #354562;background:#1b2942;color:var(--text);padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}.btn.primary{background:var(--green);color:#07141a;border-color:var(--green)}.btn:disabled{opacity:.45;cursor:not-allowed}.btn:hover:not(:disabled){filter:brightness(1.08)}.notice{font-size:12px;color:var(--muted);margin-top:12px}.statusrow{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin:10px 0 14px}.progress{height:7px;background:#202d45;border-radius:99px;overflow:hidden;margin-top:8px}.bar{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--blue));transition:width .2s}.status{color:var(--muted);font-size:12px}.tablehead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}.tabletools{display:flex;gap:8px;flex-wrap:wrap}.tabletools input,.tabletools select{background:#0c1425;color:var(--text);border:1px solid #30405e;border-radius:9px;padding:9px}.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:12px}table{border-collapse:collapse;width:100%;min-width:1000px;font-variant-numeric:tabular-nums}th,td{padding:11px 12px;text-align:right;border-bottom:1px solid #25314a;white-space:nowrap}th{position:sticky;top:0;background:#172238;color:#aebed8;font-size:11px;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;z-index:1}th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}tbody tr:hover{background:#18253b}tbody tr:last-child td{border-bottom:0}.symbol{font-weight:800;color:#f2f6ff}.subtle{font-size:11px;color:var(--muted)}.pill{display:inline-block;border-radius:99px;padding:3px 8px;font-size:10px;font-weight:800}.strong{background:#153f36;color:#6ce5b4}.match{background:#3c351d;color:#f3d37b}.review{background:#3a2630;color:#ff9da6}.link{color:var(--blue);text-decoration:none}.empty{padding:35px;text-align:center;color:var(--muted)}.footer{font-size:11px;color:var(--muted);padding:6px 2px 20px}.error{color:var(--red)}.good{color:var(--green)}.warn{color:var(--amber)}.smallbtn{font-size:11px;padding:5px 8px}.chartbox{height:360px;width:100%;display:none}.disclaimer{border-left:3px solid var(--amber);padding:10px 12px;background:#29251b;border-radius:0 9px 9px 0;color:#e7d7a9;font-size:12px;margin-top:12px}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.controls{grid-template-columns:repeat(2,minmax(0,1fr))}.top{align-items:flex-start;flex-direction:column}.tag{white-space:normal}}
+@media(max-width:520px){.wrap{padding:14px}.grid{gap:8px}.stat{padding:12px}.stat .value{font-size:22px}.controls{grid-template-columns:1fr}.panel{padding:13px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="logo">S</div>
+      <div><div class="eyebrow">Market structure lab</div><h1 class="title">Crypto 100 SMA Screener</h1><div class="sub">Find flat moving averages and compressed price ranges across Binance Spot USDT pairs.</div></div>
+    </div>
+    <div class="tag">Browser-only · No API key · GitHub Pages ready</div>
+  </header>
 
+  <section class="grid">
+    <div class="stat"><div class="label">Eligible USDT pairs</div><div class="value" id="statUniverse">—</div><div class="hint">Binance Spot · TRADING status</div></div>
+    <div class="stat"><div class="label">Scanned</div><div class="value" id="statScanned">0</div><div class="hint" id="statProgress">Waiting to start</div></div>
+    <div class="stat"><div class="label">Shortlisted</div><div class="value" id="statMatches">0</div><div class="hint">Matches current thresholds</div></div>
+    <div class="stat"><div class="label">Scan errors</div><div class="value" id="statErrors">0</div><div class="hint">Can be retried in a new scan</div></div>
+  </section>
+
+  <section class="panel">
+    <h2>Screening settings</h2>
+    <div class="controls">
+      <div class="field"><label for="slope10">Max 10-day SMA change (%)</label><input id="slope10" type="number" min="0.05" max="20" step="0.05" value="1.0"></div>
+      <div class="field"><label for="slope20">Max 20-day SMA change (%)</label><input id="slope20" type="number" min="0.05" max="30" step="0.05" value="2.0"></div>
+      <div class="field"><label for="flatRange">Max SMA range over 10 days (%)</label><input id="flatRange" type="number" min="0.05" max="20" step="0.05" value="1.5"></div>
+      <div class="field"><label for="priceRange">Max price range over 20 days (%)</label><input id="priceRange" type="number" min="1" max="100" step="0.5" value="15"></div>
+      <div class="field"><label for="minVolume">Minimum 24h quote volume (USDT)</label><input id="minVolume" type="number" min="0" step="100000" value="0"></div>
+      <div class="field"><label for="concurrency">Parallel requests</label><select id="concurrency"><option value="3">3 · Conservative</option><option value="5" selected>5 · Recommended</option><option value="8">8 · Faster, more rate-limit risk</option></select></div>
+      <div class="field"><label for="sortBy">Initial ranking</label><select id="sortBy"><option value="score">Best consolidation score</option><option value="slope10">Flattest 10-day SMA</option><option value="priceRange">Narrowest price range</option><option value="volume">Highest 24h volume</option></select></div>
+      <div class="field"><label for="search">Filter current results</label><input id="search" type="search" placeholder="e.g. BTC, ETH, SOL"></div>
+    </div>
+    <div class="checks">
+      <label><input id="excludeLeveraged" type="checkbox" checked> Exclude likely leveraged tokens (UP/DOWN/BULL/BEAR)</label>
+      <label><input id="requirePriceRange" type="checkbox" checked> Require price-range filter</label>
+      <label><input id="onlyMatches" type="checkbox" checked> Show matches only</label>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="scanBtn">Scan all Binance USDT pairs</button>
+      <button class="btn" id="cancelBtn" disabled>Cancel scan</button>
+      <button class="btn" id="exportBtn" disabled>Export CSV</button>
+      <button class="btn" id="retryBtn" disabled>Retry errors</button>
+      <button class="btn" id="clearBtn">Clear results</button>
+    </div>
+    <div class="notice">Uses completed daily candles only. A full scan may take a few minutes. Keep this browser tab open while scanning.</div>
+    <div class="progress"><div class="bar" id="progressBar"></div></div>
+    <div class="statusrow"><div class="status" id="statusText">Ready. Click Scan to load the current Binance Spot universe.</div><div class="status" id="timeText"></div></div>
+    <div class="disclaimer">This is a technical screening tool, not a buy/sell signal. A flat 100 SMA can occur during both accumulation and distribution. Check liquidity, market structure and risk independently.</div>
+  </section>
+
+  <section class="panel">
+    <div class="tablehead"><div><h2 style="margin:0">Ranked candidates</h2><div class="subtle" id="resultSummary">No scan results yet.</div></div><div class="tabletools"><select id="tableFilter"><option value="all">All results</option><option value="strong">Strong matches</option><option value="match">Matches</option><option value="failed">Outside thresholds</option><option value="errors">Errors</option></select></div></div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr>
+          <th data-key="rank">Rank</th><th data-key="symbol">Pair</th><th data-key="score">Score</th><th data-key="last">Last price</th><th data-key="sma100">SMA 100</th><th data-key="slope10">SMA change 10d</th><th data-key="slope20">SMA change 20d</th><th data-key="flatRange">SMA range 10d</th><th data-key="priceRange">Price range 20d</th><th data-key="volume">24h volume (USDT)</th><th>Status</th><th>Chart</th>
+        </tr></thead>
+        <tbody id="resultsBody"><tr><td colspan="12" class="empty">Your results will appear here.</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+  <section class="panel" id="chartPanel" style="display:none">
+    <div class="tablehead"><div><h2 id="chartTitle" style="margin:0">Pair chart</h2><div class="subtle">Daily candles and SMA 100</div></div><button class="btn smallbtn" id="closeChart">Close chart</button></div>
+    <div class="chartbox" id="chart"></div>
+  </section>
+  <div class="footer">Data: Binance public Spot market-data endpoints. External chart library: TradingView Lightweight Charts. No API keys, trading permissions or wallet connections are used. This page runs entirely in your browser; API availability and CORS policy are controlled by Binance.</div>
+</div>
+<script src="https://unpkg.com/lightweight-charts@4.2.2/dist/lightweight-charts.standalone.production.js"></script>
+<script>
+(() => {
+  "use strict";
+  const API = "https://data-api.binance.vision";
+  const $ = id => document.getElementById(id);
+  const state = { universe: [], results: [], running: false, cancel: false, errors: [], chart: null, candleSeries: null, smaSeries: null, lastScanAt: null };
+  const fmt = (n, d=2) => Number.isFinite(n) ? n.toLocaleString(undefined,{maximumFractionDigits:d,minimumFractionDigits:0}) : "—";
+  const fmtPct = n => Number.isFinite(n) ? `${n.toFixed(2)}%` : "—";
+  const fmtVol = n => Number.isFinite(n) ? n.toLocaleString(undefined,{notation:"compact",maximumFractionDigits:2}) : "—";
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  function setStatus(text, cls="") { $("statusText").className = "status " + cls; $("statusText").textContent = text; }
+  function setProgress(done,total) {
+    const pct = total ? done/total*100 : 0;
+    $("progressBar").style.width = pct + "%";
+    $("statScanned").textContent = done.toLocaleString();
+    $("statProgress").textContent = total ? `${pct.toFixed(1)}% complete` : "Waiting to start";
+  }
+  async function fetchJson(url, retries=3) {
+    let lastErr;
+    for (let attempt=0; attempt<=retries; attempt++) {
+      try {
+        const res = await fetch(url, {cache:"no-store"});
+        if (res.status === 429 || res.status === 418) {
+          const ra = Number(res.headers.get("Retry-After") || 2);
+          if (attempt < retries) { await sleep(Math.max(ra*1000, 1500*(attempt+1))); continue; }
+          throw new Error(`Rate limited (HTTP ${res.status}); wait and scan again.`);
+        }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+      } catch (e) {
+        lastErr = e;
+        if (attempt < retries && !(String(e.message).includes("Rate limited"))) await sleep(600*(attempt+1));
+      }
+    }
+    throw lastErr || new Error("Request failed");
+  }
+  function isLeveraged(symbol) { return /(UP|DOWN|BULL|BEAR)USDT$/.test(symbol) || /^(UP|DOWN|BULL|BEAR)/.test(symbol.replace(/USDT$/,"")); }
+  async function loadUniverse() {
+    setStatus("Loading Binance Spot trading pairs…");
+    const data = await fetchJson(`${API}/api/v3/exchangeInfo`);
+    const pairs = data.symbols.filter(s => s.status === "TRADING" && s.isSpotTradingAllowed !== false && s.quoteAsset === "USDT" && s.permissions?.includes?.("SPOT") !== false)
+      .map(s => ({symbol:s.symbol, base:s.baseAsset, quote:s.quoteAsset}));
+    state.universe = pairs;
+    $("statUniverse").textContent = pairs.length.toLocaleString();
+    return pairs;
+  }
+  async function loadVolumes() {
+    try {
+      const data = await fetchJson(`${API}/api/v3/ticker/24hr`);
+      return new Map(data.filter(x => x.symbol.endsWith("USDT")).map(x => [x.symbol, Number(x.quoteVolume)]));
+    } catch (e) { console.warn("24h volume unavailable; volume filter will be skipped.",e); return new Map(); }
+  }
+  function calcMetrics(symbol, candles, volume) {
+    // Binance kline: [openTime, open, high, low, close, volume, closeTime, quoteVolume, ...]
+    const now = Date.now();
+    const closed = candles.filter(c => Number(c[6]) < now - 1000);
+    if (closed.length < 120) throw new Error("Insufficient completed daily history (<120 candles)");
+    const close = closed.map(c => Number(c[4]));
+    const high = closed.map(c => Number(c[2]));
+    const low = closed.map(c => Number(c[3]));
+    const sma = close.map((_,i) => {
+      if (i < 99) return null;
+      let sum=0; for(let j=i-99;j<=i;j++) sum += close[j];
+      return sum/100;
+    });
+    const end = close.length-1;
+    const smaNow = sma[end], sma10 = sma[end-10], sma20 = sma[end-20];
+    const slope10 = Math.abs((smaNow/sma10-1)*100);
+    const slope20 = Math.abs((smaNow/sma20-1)*100);
+    const smaSlice = sma.slice(end-9,end+1).filter(Number.isFinite);
+    const flatRange = (Math.max(...smaSlice)-Math.min(...smaSlice))/smaNow*100;
+    const hi = Math.max(...high.slice(end-19,end+1));
+    const lo = Math.min(...low.slice(end-19,end+1));
+    const priceRange = (hi-lo)/close[end]*100;
+    const priceVsSma = (close[end]/smaNow-1)*100;
+    const passSlope10 = slope10 <= Number($("slope10").value);
+    const passSlope20 = slope20 <= Number($("slope20").value);
+    const passFlat = flatRange <= Number($("flatRange").value);
+    const passPrice = priceRange <= Number($("priceRange").value);
+    const passVolume = volume >= Number($("minVolume").value);
+    const pass = passSlope10 && passSlope20 && passFlat && (!$("requirePriceRange").checked || passPrice) && passVolume;
+    // Score is a transparent ranking heuristic, not a probability.
+    const score = Math.max(0,100 - slope10*20 - slope20*8 - flatRange*10 - ( $("requirePriceRange").checked ? priceRange*0.7 : 0));
+    const status = pass ? (score >= 80 ? "Strong match" : "Match") : "Review";
+    return {symbol, last:close[end], sma100:smaNow, slope10, slope20, flatRange, priceRange, priceVsSma, volume, score, pass, passSlope10, passSlope20, passFlat, passPrice, passVolume, status, candles:closed};
+  }
+  async function scanSymbols(symbols, append=false) {
+    if (state.running) return;
+    state.running=true; state.cancel=false; $("scanBtn").disabled=true; $("cancelBtn").disabled=false; $("retryBtn").disabled=true;
+    if (!append) { state.results=[]; state.errors=[]; }
+    const volumeMap = await loadVolumes();
+    const minVol = Number($("minVolume").value) || 0;
+    const exclude = $("excludeLeveraged").checked;
+    const filtered = symbols.filter(p => (!exclude || !isLeveraged(p.symbol)) && (minVol===0 || !volumeMap.has(p.symbol) || volumeMap.get(p.symbol)>=minVol));
+    const concurrency = Number($("concurrency").value);
+    let index=0, done=0, errCount=0;
+    setProgress(0,filtered.length);
+    setStatus(`Scanning ${filtered.length.toLocaleString()} pairs with ${concurrency} parallel requests…`);
+    $("timeText").textContent = "Started " + new Date().toLocaleTimeString();
+    const workers = Array.from({length:concurrency}, async () => {
+      while (!state.cancel) {
+        const i=index++; if (i>=filtered.length) break;
+        const pair=filtered[i];
+        try {
+          const candles = await fetchJson(`${API}/api/v3/klines?symbol=${encodeURIComponent(pair.symbol)}&interval=1d&limit=130`);
+          const volume = volumeMap.get(pair.symbol) ?? Number(candles[candles.length-1]?.[7] || 0);
+          const row=calcMetrics(pair.symbol,candles,volume);
+          state.results.push(row);
+        } catch(e) {
+          errCount++;
+          state.errors.push({symbol:pair.symbol,error:String(e.message || e)});
+          state.results.push({symbol:pair.symbol,error:String(e.message || e),pass:false,status:"Error",score:-1});
+        }
+        done++;
+        if (done%5===0 || done===filtered.length) {
+          setProgress(done,filtered.length);
+          $("statErrors").textContent=errCount.toLocaleString();
+          renderTable();
+          setStatus(state.cancel ? `Cancelled after ${done} pairs.` : `Scanned ${done.toLocaleString()} of ${filtered.length.toLocaleString()} pairs…`);
+        }
+        // Small pacing gap per worker; retry/backoff handles 429s.
+        await sleep(150);
+      }
+    });
+    await Promise.all(workers);
+    state.running=false; state.lastScanAt=new Date();
+    $("scanBtn").disabled=false; $("cancelBtn").disabled=true; $("retryBtn").disabled=state.errors.length===0; $("exportBtn").disabled=state.results.length===0;
+    $("statErrors").textContent=state.errors.length.toLocaleString();
+    setProgress(done,filtered.length);
+    renderTable();
+    const matches=state.results.filter(r=>r.pass).length;
+    $("statMatches").textContent=matches.toLocaleString();
+    setStatus(state.cancel ? `Scan cancelled. ${done} pairs processed; ${matches} matched.` : `Scan complete. ${done.toLocaleString()} pairs processed; ${matches.toLocaleString()} matches; ${state.errors.length} errors.`, state.errors.length ? "warn" : "good");
+    $("timeText").textContent = "Finished " + new Date().toLocaleTimeString();
+  }
+  function getVisibleRows() {
+    let rows=[...state.results];
+    const query=$("search").value.trim().toUpperCase();
+    if(query) rows=rows.filter(r=>r.symbol?.includes(query));
+    if($("onlyMatches").checked) rows=rows.filter(r=>r.pass || r.error);
+    const filter=$("tableFilter").value;
+    if(filter==="strong") rows=rows.filter(r=>r.pass && r.score>=80);
+    if(filter==="match") rows=rows.filter(r=>r.pass);
+    if(filter==="failed") rows=rows.filter(r=>!r.pass && !r.error);
+    if(filter==="errors") rows=rows.filter(r=>r.error);
+    const sort=$("sortBy").value;
+    rows.sort((a,b)=>{
+      if(sort==="slope10") return (a.slope10??Infinity)-(b.slope10??Infinity);
+      if(sort==="priceRange") return (a.priceRange??Infinity)-(b.priceRange??Infinity);
+      if(sort==="volume") return (b.volume??-1)-(a.volume??-1);
+      return (b.score??-1)-(a.score??-1);
+    });
+    return rows;
+  }
+  function renderTable() {
+    const rows=getVisibleRows();
+    $("statMatches").textContent=state.results.filter(r=>r.pass).length.toLocaleString();
+    $("resultSummary").textContent=`Showing ${rows.length.toLocaleString()} of ${state.results.length.toLocaleString()} processed pairs · sorted by ${$("sortBy").selectedOptions[0].text.toLowerCase()}.`;
+    const body=$("resultsBody");
+    if(!rows.length){body.innerHTML='<tr><td colspan="12" class="empty">No rows match the current filters.</td></tr>';return;}
+    body.innerHTML=rows.map((r,i)=>{
+      if(r.error) return `<tr><td>—</td><td class="symbol">${r.symbol}</td><td>—</td><td colspan="7" class="error" style="text-align:left">${escapeHtml(r.error)}</td><td><span class="pill review">Error</span></td><td>—</td></tr>`;
+      const pill=r.pass?(r.score>=80?"strong":"match"):"review";
+      const link=`https://www.tradingview.com/chart/?symbol=BINANCE%3A${encodeURIComponent(r.symbol)}`;
+      return `<tr><td>${i+1}</td><td><span class="symbol">${r.symbol}</span><div class="subtle">${r.priceVsSma>=0?"+":""}${fmtPct(r.priceVsSma)} vs SMA</div></td><td><b>${fmt(r.score,1)}</b></td><td>${fmt(r.last,8)}</td><td>${fmt(r.sma100,8)}</td><td>${fmtPct(r.slope10)}</td><td>${fmtPct(r.slope20)}</td><td>${fmtPct(r.flatRange)}</td><td>${fmtPct(r.priceRange)}</td><td>${fmtVol(r.volume)}</td><td><span class="pill ${pill}">${r.pass?(r.score>=80?"Strong":"Match"):"Review"}</span></td><td><button class="btn smallbtn chartBtn" data-symbol="${r.symbol}">View</button> <a class="link subtle" target="_blank" rel="noopener" href="${link}">TV</a></td></tr>`;
+    }).join("");
+    body.querySelectorAll(".chartBtn").forEach(btn=>btn.addEventListener("click",()=>showChart(btn.dataset.symbol)));
+  }
+  function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+  function exportCsv() {
+    const rows=getVisibleRows().filter(r=>!r.error);
+    const cols=["symbol","score","last","sma100","slope10","slope20","flatRange","priceRange","priceVsSma","volume","pass","status"];
+    const csv=[cols.join(","),...rows.map(r=>cols.map(k=>JSON.stringify(r[k]??"")).join(","))].join("\r\n");
+    const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8;"}));a.download="crypto_100sma_shortlist.csv";a.click();URL.revokeObjectURL(a.href);
+  }
+  async function showChart(symbol) {
+    const row=state.results.find(r=>r.symbol===symbol && r.candles);
+    if(!row) return;
+    $("chartPanel").style.display="block"; $("chartTitle").textContent=`${symbol} · Daily candles + SMA 100`;
+    const box=$("chart");box.style.display="block";box.innerHTML="";
+    if(!window.LightweightCharts){box.innerHTML='<div class="empty">Chart library failed to load. Check your internet connection or CDN availability.</div>';return;}
+    if(state.chart){state.chart.remove();state.chart=null;}
+    state.chart=LightweightCharts.createChart(box,{width:box.clientWidth,height:360,layout:{background:{color:"#121a2d"},textColor:"#b9c8e2"},grid:{vertLines:{color:"#24314a"},horzLines:{color:"#24314a"}},rightPriceScale:{borderColor:"#33415c"},timeScale:{borderColor:"#33415c",timeVisible:false},crosshair:{mode:LightweightCharts.CrosshairMode.Normal}});
+    state.candleSeries=state.chart.addCandlestickSeries({upColor:"#52d6a3",downColor:"#ff7f8b",borderVisible:false,wickUpColor:"#52d6a3",wickDownColor:"#ff7f8b"});
+    state.smaSeries=state.chart.addLineSeries({color:"#f2c66d",lineWidth:2,priceLineVisible:false,lastValueVisible:true});
+    const cs=row.candles;
+    state.candleSeries.setData(cs.map(c=>({time:Math.floor(Number(c[0])/1000),open:Number(c[1]),high:Number(c[2]),low:Number(c[3]),close:Number(c[4])})));
+    const close=cs.map(c=>Number(c[4]));
+    const points=[];
+    for(let i=99;i<close.length;i++){let sum=0;for(let j=i-99;j<=i;j++)sum+=close[j];points.push({time:Math.floor(Number(cs[i][0])/1000),value:sum/100});}
+    state.smaSeries.setData(points);state.chart.timeScale().fitContent();
+    $("chartPanel").scrollIntoView({behavior:"smooth",block:"start"});
+    if(window.ResizeObserver){new ResizeObserver(()=>{if(state.chart)state.chart.applyOptions({width:box.clientWidth});}).observe(box);}
+  }
+  $("scanBtn").addEventListener("click",async()=>{try{const pairs=await loadUniverse();await scanSymbols(pairs);}catch(e){setStatus(`Could not load Binance data: ${e.message}. Try again later or check whether the API is reachable from your network.`,`error`);$("scanBtn").disabled=false;}});
+  $("cancelBtn").addEventListener("click",()=>{state.cancel=true;setStatus("Cancelling after in-flight requests finish…","warn");});
+  $("exportBtn").addEventListener("click",exportCsv);
+  $("retryBtn").addEventListener("click",async()=>{const syms=state.errors.map(e=>({symbol:e.symbol}));const failed=new Set(syms.map(x=>x.symbol));state.results=state.results.filter(r=>!failed.has(r.symbol) || !r.error);state.errors=[];await scanSymbols(syms,true);});
+  $("clearBtn").addEventListener("click",()=>{if(state.running)return;state.results=[];state.errors=[];setProgress(0,0);$("statMatches").textContent="0";$("statErrors").textContent="0";$("exportBtn").disabled=true;$("retryBtn").disabled=true;renderTable();setStatus("Results cleared.");});
+  $("search").addEventListener("input",renderTable);$("tableFilter").addEventListener("change",renderTable);$("sortBy").addEventListener("change",renderTable);$("onlyMatches").addEventListener("change",renderTable);
+  $("closeChart").addEventListener("click",()=>{$("chartPanel").style.display="none";if(state.chart){state.chart.remove();state.chart=null;}});
+  document.querySelectorAll("th[data-key]").forEach(th=>th.addEventListener("click",()=>{const key=th.dataset.key;if(["slope10","priceRange","score","volume"].includes(key)){$("sortBy").value=key;renderTable();}}));
+  // Friendly preflight note: a browser can only scan if the data host permits cross-origin requests.
+  setStatus("Ready. Public Binance market data requires no API key. Click Scan to begin.");
+})();
+</script>
+</body>
+</html>
