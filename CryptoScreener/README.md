@@ -1,4 +1,4 @@
-# Crypto 100 SMA Screener — Fixed v4
+# Delta India Crypto SMA Screener
 
 ## Windows 11 local test
 1. Extract the ZIP into a folder.
@@ -8,10 +8,17 @@
 
 Do not open `index.html` directly as a file. The batch file starts Python's built-in HTTP server.
 
-## What's fixed
-The prior diagnostic build attempted to access loader elements (`loaderLine`, `loaderTitle`, `loaderDetail`, `loaderPct`) that were missing from the page. This caused `Cannot read properties of null (reading 'style')` before the Binance symbol request could complete. This version adds those elements and keeps error details visible.
+## Universe and filtering
+- Loads live products from the public Delta Exchange India products API across all product categories.
+- Extracts unique underlying asset symbols, then intersects them with active Binance Spot USDT pairs.
+- Uses Binance candles and preserves the older SMA/EMA change method: absolute percentage difference between the current moving average and its value `lookback` bars earlier.
+- Downloads only the candle history needed for the largest MA length + lookback on each selected timeframe, with a small buffer.
+- Shares one candle request per coin/timeframe even when multiple filters use that timeframe.
+
+## Notes
+- Delta product availability can change. The universe is refreshed on startup and when Scan is clicked.
+- A Delta-listed asset is only scanned when an active Binance Spot USDT pair with the same base-asset symbol exists. Assets without an exact ticker match are excluded rather than guessed.
+- Both public APIs must permit browser cross-origin requests for this static site to work. If the Delta API is blocked by CORS on your network, a small proxy/backend would be required.
 
 ## GitHub Pages
-Upload/replace `index.html` in the repository folder published by GitHub Pages. Commit the change, wait for the Pages deployment, then hard-refresh the site (Ctrl+Shift+R). Keep `.nojekyll` in the published root if already used.
-
-This is a static browser-only app. Binance API access can still depend on network and browser CORS behavior. A successful scan has not been verified until the pair count loads and the scan completes in your browser.
+Replace `index.html` in the published repository root, commit, wait for deployment, and hard-refresh with Ctrl+Shift+R. Keep `.nojekyll` in the published root.

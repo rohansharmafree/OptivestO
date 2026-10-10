@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b1020">
-<title>Crypto 100 SMA Consolidation Screener</title>
+<title>Delta India Crypto SMA Screener</title>
 <style>
 :root{--bg:#0b1020;--panel:#121a2d;--panel2:#172238;--line:#26334d;--text:#edf3ff;--muted:#9caecc;--green:#52d6a3;--amber:#f2c66d;--red:#ff7f8b;--blue:#8ab4ff}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(1200px 600px at 10% -10%,#1a2d4d 0%,transparent 60%),var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
@@ -22,13 +22,13 @@
   <header class="top">
     <div class="brand">
       <div class="logo">S</div>
-      <div><div class="eyebrow">Market structure lab</div><h1 class="title">Crypto 100 SMA Screener</h1><div class="sub">Find flat moving averages and compressed price ranges across Binance Spot USDT pairs.</div></div>
+      <div><div class="eyebrow">Delta India market universe</div><h1 class="title">Crypto SMA Screener</h1><div class="sub">Find nearly flat moving averages for unique coins listed on Delta Exchange India, using Binance USDT candles.</div></div>
     </div>
     <div class="tag">Browser-only · No API key · GitHub Pages ready</div>
   </header>
 
   <section class="grid">
-    <div class="stat"><div class="label">Eligible USDT pairs</div><div class="value" id="statUniverse">—</div><div class="hint">Binance Spot · TRADING status</div></div>
+    <div class="stat"><div class="label">Matched Delta coins</div><div class="value" id="statUniverse">—</div><div class="hint">Unique live Delta underlyings with Binance USDT candles</div></div>
     <div class="stat"><div class="label">Scanned</div><div class="value" id="statScanned">0</div><div class="hint" id="statProgress">Waiting to start</div></div>
     <div class="stat"><div class="label">Shortlisted</div><div class="value" id="statMatches">0</div><div class="hint">Matches current thresholds</div></div>
     <div class="stat"><div class="label">Scan errors</div><div class="value" id="statErrors">0</div><div class="hint">Can be retried in a new scan</div></div>
@@ -44,7 +44,7 @@
     </div>
     <div class="notice">Only the custom moving-average filters above determine the shortlist. Every filter must pass. You can change the number of filters from 1 to 5.</div>
     <div class="actions">
-      <button class="btn primary" id="scanBtn">Scan all Binance USDT pairs</button>
+      <button class="btn primary" id="scanBtn">Scan Delta India coins</button>
       <button class="btn" id="cancelBtn" disabled>Cancel scan</button>
       <button class="btn" id="exportBtn" disabled>Export CSV</button>
       <button class="btn" id="retryBtn" disabled>Retry errors</button>
@@ -84,7 +84,7 @@
   "use strict";
   const APIS = ["https://data-api.binance.vision", "https://api-gcp.binance.com", "https://api1.binance.com", "https://api.binance.com"];
   const $ = id => document.getElementById(id);
-  const state = { universe: [], results: [], running: false, cancel: false, errors: [], chart: null, candleSeries: null, smaSeries: null, lastScanAt: null };
+  const state = { universe: [], deltaAssets: [], results: [], running: false, cancel: false, errors: [], chart: null, candleSeries: null, smaSeries: null, lastScanAt: null };
   const fmt = (n, d=2) => Number.isFinite(n) ? n.toLocaleString(undefined,{maximumFractionDigits:d,minimumFractionDigits:0}) : "—";
   const fmtPct = n => Number.isFinite(n) ? `${n.toFixed(2)}%` : "—";
   const fmtVol = n => Number.isFinite(n) ? n.toLocaleString(undefined,{notation:"compact",maximumFractionDigits:2}) : "—";
@@ -130,23 +130,81 @@
     throw new Error(`Binance request failed for ${path.split("?")[0]}. ${detail}. Opening an API URL directly is not the same as allowing JavaScript fetch (CORS). Press F12 → Console to see browser details. If every host fails, this static page needs a reachable CORS-enabled endpoint or a small proxy.`);
   }
   function isLeveraged(symbol) { return /(UP|DOWN|BULL|BEAR)USDT$/.test(symbol) || /^(UP|DOWN|BULL|BEAR)/.test(symbol.replace(/USDT$/,"")); }
+  async function fetchDeltaProducts() {
+    const base = "https://api.india.delta.exchange/v2/products";
+    const products = [];
+    let after = "";
+    const seenCursors = new Set();
+    for (let page = 0; page < 20; page++) {
+      const qs = new URLSearchParams({ page_size: "500", states: "live" });
+      if (after) qs.set("after", after);
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 12000);
+      try {
+        setStatus(`Loading Delta India live products${page ? ` (page ${page + 1})` : ""}…`);
+        const res = await fetch(`${base}?${qs.toString()}`, {cache:"no-store", mode:"cors", signal:controller.signal, headers:{Accept:"application/json"}});
+        if (!res.ok) throw new Error(`Delta India products API returned HTTP ${res.status}`);
+        const payload = await res.json();
+        if (payload.success === false) throw new Error(payload.error || payload.message || "Delta India products API reported failure");
+        const pageItems = Array.isArray(payload.result) ? payload.result : [];
+        products.push(...pageItems);
+        const next = payload.meta?.after || payload.meta?.next || "";
+        if (!next || !pageItems.length || seenCursors.has(next)) break;
+        seenCursors.add(next); after = next;
+      } catch (e) {
+        const why = e?.name === "AbortError" ? "request timed out" : (e?.message || "fetch failed");
+        throw new Error(`Could not load Delta Exchange India live products: ${why}. If the API opens directly but fails here, browser CORS may be blocking it.`);
+      } finally { clearTimeout(timer); }
+    }
+    if (!products.length) throw new Error("Delta India returned no live products. Check its public API response and pagination.");
+    return products;
+  }
+  function deltaUnderlying(product) {
+    const symbol = String(product.symbol || "").toUpperCase();
+    // Option symbols: C-BTC-... / P-BTC-...
+    let m = symbol.match(/^[CPM]-([A-Z0-9]+)-/);
+    if (m) return m[1];
+    // Spot symbols: BTC_INR, ETH_INR, etc.
+    if (symbol.includes("_")) return symbol.split("_")[0];
+    // Common linear/inverse derivative symbols: BTCUSD, ETHUSDT, BTCUSD-...
+    m = symbol.match(/^([A-Z0-9]+?)(?:USDT|USD|INR)(?:-|$)/);
+    if (m) return m[1];
+    // Fall back to explicit underlying fields if present in this product schema.
+    const explicit = product.underlying_asset_symbol || product.underlying_asset?.symbol || product.underlying_asset;
+    const token = typeof explicit === "string" ? explicit.toUpperCase() : "";
+    if (token && !["USD","USDT","INR"].includes(token)) return token;
+    return "";
+  }
   async function loadUniverse() {
-    setStatus("Connecting to Binance public market data…");
-    $("connectionHelp").textContent = "Requesting Spot trading-pair metadata from Binance…";
-    const data = await fetchJson(`/api/v3/exchangeInfo`);
-    // Binance may return permissions: [] while permissionSets contains SPOT.
-    // Do not require permissions[] to contain SPOT or all pairs may be filtered out.
-    const pairs = data.symbols.filter(s => {
+    setStatus("Loading Delta India products and Binance market metadata…");
+    $("connectionHelp").textContent = "Fetching live instruments from Delta Exchange India, then matching unique underlying coins to Binance Spot USDT pairs…";
+    $("loaderTitle").textContent = "Loading Delta India coin universe";
+    $("loaderDetail").textContent = "Getting live spot, futures, perpetual and options underlyings";
+    const [products, exchangeInfo] = await Promise.all([
+      fetchDeltaProducts(), fetchJson(`/api/v3/exchangeInfo`)
+    ]);
+    const deltaAssets = new Set();
+    for (const product of products) {
+      if (product.state && String(product.state).toLowerCase() !== "live") continue;
+      const asset = deltaUnderlying(product);
+      if (asset && /^[A-Z0-9]+$/.test(asset) && !["USD","USDT","INR","USDC","BUSD"].includes(asset)) deltaAssets.add(asset);
+    }
+    if (!deltaAssets.size) throw new Error(`Loaded ${products.length} Delta products but could not identify any underlying coins. Product symbol format may have changed.`);
+    // Match each unique Delta underlying to one active Binance Spot USDT market.
+    const binancePairs = exchangeInfo.symbols.filter(s => {
       const spotPermission = Array.isArray(s.permissions) && s.permissions.includes("SPOT");
-      const spotPermissionSet = Array.isArray(s.permissionSets) &&
-        s.permissionSets.some(set => Array.isArray(set) && set.includes("SPOT"));
+      const spotPermissionSet = Array.isArray(s.permissionSets) && s.permissionSets.some(set => Array.isArray(set) && set.includes("SPOT"));
       const spotAllowed = s.isSpotTradingAllowed === true || spotPermission || spotPermissionSet;
-      return s.status === "TRADING" && s.quoteAsset === "USDT" && spotAllowed;
-    }).map(s => ({symbol:s.symbol, base:s.baseAsset, quote:s.quoteAsset}));
+      return s.status === "TRADING" && s.quoteAsset === "USDT" && spotAllowed && !isLeveraged(s.symbol);
+    });
+    const byBase = new Map();
+    for (const pair of binancePairs) if (deltaAssets.has(pair.baseAsset) && !byBase.has(pair.baseAsset)) byBase.set(pair.baseAsset, pair);
+    const pairs = [...byBase.values()].map(s => ({symbol:s.symbol, base:s.baseAsset, quote:s.quoteAsset, deltaListed:true})).sort((a,b)=>a.base.localeCompare(b.base));
+    state.deltaAssets = [...deltaAssets].sort();
     state.universe = pairs;
     $("statUniverse").textContent = pairs.length.toLocaleString();
-    $("connectionHelp").textContent = `Loaded ${pairs.length.toLocaleString()} eligible Spot USDT pairs from Binance.`;
-    if (!pairs.length) throw new Error("Binance returned exchange metadata, but no pairs passed the current Spot/USDT/TRADING filter. The symbol permissions filter needs adjustment.");
+    $("connectionHelp").textContent = `Delta India: ${deltaAssets.size} unique live underlying symbols across all product categories; ${pairs.length} have a matching active Binance Spot USDT pair and can be screened.`;
+    if (!pairs.length) throw new Error(`Delta India returned ${deltaAssets.size} underlying symbols, but none matched active Binance Spot USDT base assets. Check asset-symbol mappings.`);
     return pairs;
   }
   async function loadVolumes() {
@@ -261,11 +319,13 @@
     let volumeMap=new Map();
     try {volumeMap=await loadVolumes();} catch(e){console.warn(e);}
     const filtered=symbols.filter(p=>!isLeveraged(p.symbol));
-    const concurrency=5, intervals=[...new Set(getDynamicFilters().map(f=>f.interval))];
+    const filters=getDynamicFilters();
+    const concurrency=8, intervals=[...new Set(filters.map(f=>f.interval))];
+    const limitsByInterval=new Map(intervals.map(interval=>[interval,Math.min(1000,Math.max(...filters.filter(f=>f.interval===interval).map(f=>f.length+f.lookback))+3)]));
     let index=0,done=0,errCount=0;
     setProgress(0,filtered.length);$("loaderLine").style.display="flex";$("loaderTitle").textContent="Scanning market candles";
-    $("loaderDetail").textContent=`${filtered.length} pairs · intervals ${intervals.join(", ")} · ${concurrency} parallel workers`;$("loaderPct").textContent="0%";
-    setStatus(`Scanning ${filtered.length.toLocaleString()} pairs across ${intervals.length} timeframe(s)…`);
+    $("loaderDetail").textContent=`${filtered.length} Delta-matched coins · intervals ${intervals.join(", ")} · ${concurrency} parallel workers · minimal candle history`;$("loaderPct").textContent="0%";
+    setStatus(`Scanning ${filtered.length.toLocaleString()} Delta India coins across ${intervals.length} timeframe(s)…`);
     const workers=Array.from({length:concurrency},async()=>{
       while(!state.cancel){
         const i=index++;if(i>=filtered.length)break;
@@ -273,8 +333,7 @@
         try{
           const byInterval={};
           for(const interval of intervals){
-            byInterval[interval]=await fetchJson(`/api/v3/klines?symbol=${encodeURIComponent(pair.symbol)}&interval=${encodeURIComponent(interval)}&limit=1000`);
-            await sleep(50);
+            byInterval[interval]=await fetchJson(`/api/v3/klines?symbol=${encodeURIComponent(pair.symbol)}&interval=${encodeURIComponent(interval)}&limit=${limitsByInterval.get(interval)}`);
           }
           const volume=volumeMap.get(pair.symbol)??0;
           state.results.push(calculateSymbol(pair.symbol,byInterval,volume));
@@ -294,7 +353,7 @@
     $("retryBtn").disabled=state.errors.length===0;$("exportBtn").disabled=state.results.length===0;
     $("statErrors").textContent=state.errors.length.toLocaleString();setProgress(done,filtered.length);renderTable();
     const matches=state.results.filter(r=>r.pass).length;$("statMatches").textContent=matches.toLocaleString();
-    setStatus(state.cancel?`Scan cancelled. ${done} pairs processed; ${matches} matched.`:`Scan complete. ${done.toLocaleString()} pairs processed; ${matches.toLocaleString()} matches; ${state.errors.length} errors.`,state.errors.length?"warn":"good");
+    setStatus(state.cancel?`Scan cancelled. ${done} pairs processed; ${matches} matched.`:`Scan complete. ${done.toLocaleString()} Delta India coins processed; ${matches.toLocaleString()} matches; ${state.errors.length} errors.`,state.errors.length?"warn":"good");
     $("timeText").textContent="Finished "+new Date().toLocaleTimeString();$("loaderTitle").textContent=state.cancel?"Scan cancelled":"Scan finished";
     $("loaderDetail").textContent=`${done} processed · ${matches} matches · ${state.errors.length} errors`;$("loaderPct").textContent="100%";
   }
@@ -327,7 +386,7 @@
     const rows=getVisibleRows().filter(r=>!r.error);
     const cols=["symbol","score","last","sma100","slope10","slope20","flatRange","priceRange","priceVsSma","volume","pass","status"];
     const csv=[cols.join(","),...rows.map(r=>cols.map(k=>JSON.stringify(r[k]??"")).join(","))].join("\r\n");
-    const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8;"}));a.download="crypto_100sma_shortlist.csv";a.click();URL.revokeObjectURL(a.href);
+    const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8;"}));a.download="delta_india_crypto_sma_shortlist.csv";a.click();URL.revokeObjectURL(a.href);
   }
   async function showChart(symbol) {
     const row=state.results.find(r=>r.symbol===symbol && r.candles);
