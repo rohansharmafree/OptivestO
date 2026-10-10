@@ -37,26 +37,12 @@
   <section class="panel">
     <h2>Screening settings</h2>
     <div class="filterbuilder">
-      <div class="filtertop"><div><b>Custom moving-average filters</b><div class="subtle">Choose how many conditions to combine. Every enabled condition must pass.</div></div>
-      <div class="filtercount"><label for="filterCount">Number of filters</label><select id="filterCount"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></div></div>
+      <div class="filtertop"><div><b>Custom moving-average filters</b><div class="subtle">Choose how many conditions to combine. Every selected condition must pass.</div></div>
+      <div class="filtercount"><label for="filterCount">Number of filters</label><select id="filterCount"><option selected>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div></div>
       <div id="dynamicFilters" class="dynamicfilters"></div>
-      <div class="subtle">For each filter: choose SMA/EMA, its moving-average length, the lookback period used to measure flatness, and the maximum permitted change (%). Example: SMA 100 with a 10-day lookback and max change 1%.</div>
+      <div class="subtle">For each filter: choose SMA/EMA, its moving-average length, the lookback period used to measure flatness, and the maximum permitted change (%). Example: SMA 100 on a 30-minute chart, using the last 10 bars and max change 1%.</div>
     </div>
-    <div class="controls">
-      <div class="field"><label for="slope10">Max 10-day SMA change (%)</label><input id="slope10" type="number" min="0.05" max="20" step="0.05" value="1.0"></div>
-      <div class="field"><label for="slope20">Max 20-day SMA change (%)</label><input id="slope20" type="number" min="0.05" max="30" step="0.05" value="2.0"></div>
-      <div class="field"><label for="flatRange">Max SMA range over 10 days (%)</label><input id="flatRange" type="number" min="0.05" max="20" step="0.05" value="1.5"></div>
-      <div class="field"><label for="priceRange">Max price range over 20 days (%)</label><input id="priceRange" type="number" min="1" max="100" step="0.5" value="15"></div>
-      <div class="field"><label for="minVolume">Minimum 24h quote volume (USDT)</label><input id="minVolume" type="number" min="0" step="100000" value="0"></div>
-      <div class="field"><label for="concurrency">Parallel requests</label><select id="concurrency"><option value="3">3 · Conservative</option><option value="5" selected>5 · Recommended</option><option value="8">8 · Faster, more rate-limit risk</option></select></div>
-      <div class="field"><label for="sortBy">Initial ranking</label><select id="sortBy"><option value="score">Best consolidation score</option><option value="slope10">Flattest 10-day SMA</option><option value="priceRange">Narrowest price range</option><option value="volume">Highest 24h volume</option></select></div>
-      <div class="field"><label for="search">Filter scanned results</label><input id="search" type="search" placeholder="e.g. BTC, ETH, SOL"></div>
-    </div>
-    <div class="checks">
-      <label><input id="excludeLeveraged" type="checkbox" checked> Exclude likely leveraged tokens (UP/DOWN/BULL/BEAR)</label>
-      <label><input id="requirePriceRange" type="checkbox" checked> Require price-range filter</label>
-      <label><input id="onlyMatches" type="checkbox" checked> Show matches only</label>
-    </div>
+    <div class="notice">Only the custom moving-average filters above determine the shortlist. Every filter must pass. You can change the number of filters from 1 to 5.</div>
     <div class="actions">
       <button class="btn primary" id="scanBtn">Scan all Binance USDT pairs</button>
       <button class="btn" id="cancelBtn" disabled>Cancel scan</button>
@@ -64,9 +50,10 @@
       <button class="btn" id="retryBtn" disabled>Retry errors</button>
       <button class="btn" id="clearBtn">Clear results</button>
     </div>
-    <div class="notice">Uses completed daily candles only. A full scan may take a few minutes. Keep this browser tab open while scanning.</div>
+    <div class="notice">Uses completed candles for each filter’s selected timeframe. A full scan may take several minutes. Keep this browser tab open while scanning.</div>
     <div class="progress"><div class="bar" id="progressBar"></div></div>
-    <div class="statusrow"><div class="status" id="statusText">Ready. Click Scan to load the current Binance Spot universe.</div><div class="status" id="timeText"></div></div>
+    <div class="statusrow"><div class="status" id="statusText">Connecting to Binance public market data…</div><div class="status" id="timeText"></div></div>
+    <div class="notice" id="connectionHelp">For local testing, serve this folder over http://localhost (do not open index.html directly as a file).</div>
     <div class="disclaimer">This is a technical screening tool, not a buy/sell signal. A flat 100 SMA can occur during both accumulation and distribution. Check liquidity, market structure and risk independently.</div>
   </section>
 
@@ -91,7 +78,7 @@
 <script>
 (() => {
   "use strict";
-  const APIS = ["https://data-api.binance.vision", "https://api.binance.com"];
+  const APIS = ["https://data-api.binance.vision", "https://api-gcp.binance.com", "https://api1.binance.com", "https://api.binance.com"];
   const $ = id => document.getElementById(id);
   const state = { universe: [], results: [], running: false, cancel: false, errors: [], chart: null, candleSeries: null, smaSeries: null, lastScanAt: null };
   const fmt = (n, d=2) => Number.isFinite(n) ? n.toLocaleString(undefined,{maximumFractionDigits:d,minimumFractionDigits:0}) : "—";
@@ -126,7 +113,10 @@
         } finally { clearTimeout(timer); }
       }
     }
-    throw new Error(`Could not reach Binance market data. ${lastErr?.name === "AbortError" ? "Request timed out." : (lastErr?.message || "Network/CORS error.")} Check browser internet access, extensions, or regional API availability.`);
+    const localFile = location.protocol === "file:";
+    const reason = lastErr?.name === "AbortError" ? "Request timed out." : (lastErr?.message || "Network/CORS error.");
+    const localHint = localFile ? " You opened index.html directly (file://). Start a local web server first: open Command Prompt in this folder and run: py -m http.server 8000, then visit http://localhost:8000." : " If this page is already running on localhost and the direct API test works, a browser extension, firewall, ISP, or Binance CORS/network restriction may be blocking JavaScript requests.";
+    throw new Error(`Could not reach Binance market data. ${reason}${localHint}`);
   }
   function isLeveraged(symbol) { return /(UP|DOWN|BULL|BEAR)USDT$/.test(symbol) || /^(UP|DOWN|BULL|BEAR)/.test(symbol.replace(/USDT$/,"")); }
   async function loadUniverse() {
@@ -164,20 +154,24 @@
     const prior = [...host.querySelectorAll(".filterrow")].map(row => ({
       type: row.querySelector(".maType").value,
       length: row.querySelector(".maLength").value,
+      interval: row.querySelector(".maInterval")?.value || "1d",
       lookback: row.querySelector(".maLookback").value,
       maxChange: row.querySelector(".maMax").value
     }));
     host.innerHTML = Array.from({length:count}, (_,i) => {
-      const p = prior[i] || [{type:"SMA",length:"100",lookback:"10",maxChange:"1.0"},
-                            {type:"SMA",length:"100",lookback:"20",maxChange:"2.0"},
-                            {type:"SMA",length:"100",lookback:"10",maxChange:"1.5"},
-                            {type:"EMA",length:"50",lookback:"10",maxChange:"1.5"},
-                            {type:"SMA",length:"200",lookback:"20",maxChange:"2.5"}][i];
+      const p = prior[i] || [{type:"SMA",length:"100",interval:"30m",lookback:"10",maxChange:"1.0"},
+                            {type:"SMA",length:"100",interval:"1d",lookback:"20",maxChange:"2.0"},
+                            {type:"SMA",length:"100",interval:"1d",lookback:"10",maxChange:"1.5"},
+                            {type:"EMA",length:"50",interval:"4h",lookback:"10",maxChange:"1.5"},
+                            {type:"SMA",length:"200",interval:"1w",lookback:"20",maxChange:"2.5"}][i];
+      const interval = p.interval || "1d";
+      const intervals = [["1m","1 minute"],["3m","3 minutes"],["5m","5 minutes"],["15m","15 minutes"],["30m","30 minutes"],["1h","1 hour"],["2h","2 hours"],["4h","4 hours"],["6h","6 hours"],["8h","8 hours"],["12h","12 hours"],["1d","1 day"],["3d","3 days"],["1w","1 week"],["1M","1 month"]];
       return `<div class="filterrow">
         <div class="filtername">Filter ${i+1}</div>
         <div class="field"><label>Moving average</label><select class="maType"><option ${p.type==="SMA"?"selected":""}>SMA</option><option ${p.type==="EMA"?"selected":""}>EMA</option></select></div>
-        <div class="field"><label>MA length (candles)</label><input class="maLength" type="number" min="2" max="500" value="${p.length}"></div>
-        <div class="field"><label>Lookback (days)</label><input class="maLookback" type="number" min="1" max="100" value="${p.lookback}"></div>
+        <div class="field"><label>MA length (bars)</label><input class="maLength" type="number" min="2" max="500" value="${p.length}"></div>
+        <div class="field wide"><label>Chart timeframe</label><select class="maInterval">${intervals.map(([v,label])=>`<option value="${v}" ${interval===v?"selected":""}>${label}</option>`).join("")}</select></div>
+        <div class="field"><label>Lookback (bars)</label><input class="maLookback" type="number" min="1" max="500" value="${p.lookback}"></div>
         <div class="field"><label>Max change (%)</label><input class="maMax" type="number" min="0.01" max="100" step="0.05" value="${p.maxChange}"></div>
       </div>`;
     }).join("");
@@ -186,6 +180,7 @@
     return [...$("dynamicFilters").querySelectorAll(".filterrow")].map((row,i)=>({
       index:i+1, type:row.querySelector(".maType").value,
       length:Math.max(2,Number(row.querySelector(".maLength").value)||100),
+      interval:row.querySelector(".maInterval")?.value || "1d",
       lookback:Math.max(1,Number(row.querySelector(".maLookback").value)||10),
       maxChange:Math.max(0.01,Number(row.querySelector(".maMax").value)||1)
     }));
@@ -204,131 +199,112 @@
     }
     return out;
   }
-  function calcMetrics(symbol, candles, volume) {
-    // Binance kline: [openTime, open, high, low, close, volume, closeTime, quoteVolume, ...]
-    const now = Date.now();
-    const closed = candles.filter(c => Number(c[6]) < now - 1000);
-    if (closed.length < 120) throw new Error("Insufficient completed daily history (<120 candles)");
-    const close = closed.map(c => Number(c[4]));
-    const high = closed.map(c => Number(c[2]));
-    const low = closed.map(c => Number(c[3]));
-    const sma = close.map((_,i) => {
-      if (i < 99) return null;
-      let sum=0; for(let j=i-99;j<=i;j++) sum += close[j];
-      return sum/100;
+  function calcMA(values, length, type) {
+    const out = Array(values.length).fill(null);
+    if(type==="EMA") {
+      const k=2/(length+1); let prev=null;
+      for(let i=0;i<values.length;i++) {
+        if(i===length-1) { prev=values.slice(0,length).reduce((a,b)=>a+b,0)/length; out[i]=prev; }
+        else if(i>=length) { prev=values[i]*k+prev*(1-k); out[i]=prev; }
+      }
+    } else {
+      let sum=0;
+      for(let i=0;i<values.length;i++){sum+=values[i];if(i>=length)sum-=values[i-length];if(i>=length-1)out[i]=sum/length;}
+    }
+    return out;
+  }
+  function calculateSymbol(symbol, candlesByInterval, volume) {
+    const filters=getDynamicFilters();
+    const dynamicFilters=filters.map(f=>{
+      const candles=candlesByInterval[f.interval]||[];
+      const now=Date.now();
+      const closed=candles.filter(c=>Number(c[6])<now-500);
+      const close=closed.map(c=>Number(c[4]));
+      if(close.length < f.length+f.lookback) return {...f,change:Infinity,current:null,pass:false,reason:`Need ${f.length+f.lookback} closed bars for ${f.interval}; received ${close.length}`};
+      const ma=calcMA(close,f.length,f.type);
+      const end=close.length-1, current=ma[end], past=ma[end-f.lookback];
+      const change=Number.isFinite(current)&&Number.isFinite(past)&&past!==0?Math.abs((current/past-1)*100):Infinity;
+      return {...f,current,change,pass:change<=f.maxChange,reason:""};
     });
-    const end = close.length-1;
-    const smaNow = sma[end], sma10 = sma[end-10], sma20 = sma[end-20];
-    const slope10 = Math.abs((smaNow/sma10-1)*100);
-    const slope20 = Math.abs((smaNow/sma20-1)*100);
-    const smaSlice = sma.slice(end-9,end+1).filter(Number.isFinite);
-    const flatRange = (Math.max(...smaSlice)-Math.min(...smaSlice))/smaNow*100;
-    const hi = Math.max(...high.slice(end-19,end+1));
-    const lo = Math.min(...low.slice(end-19,end+1));
-    const priceRange = (hi-lo)/close[end]*100;
-    const priceVsSma = (close[end]/smaNow-1)*100;
-    const passSlope10 = slope10 <= Number($("slope10").value);
-    const passSlope20 = slope20 <= Number($("slope20").value);
-    const passFlat = flatRange <= Number($("flatRange").value);
-    const passPrice = priceRange <= Number($("priceRange").value);
-    const passVolume = volume >= Number($("minVolume").value);
-    const dynamicFilters = getDynamicFilters().map(f => {
-      const ma = movingAverage(close, f.length, f.type);
-      const current = ma[end], past = ma[end-f.lookback];
-      const change = (Number.isFinite(current) && Number.isFinite(past) && past !== 0) ? Math.abs((current/past-1)*100) : Infinity;
-      return {...f, current, change, pass:change <= f.maxChange};
-    });
-    const passDynamic = dynamicFilters.every(f => f.pass);
-    const pass = passDynamic && (!$("requirePriceRange").checked || passPrice) && passVolume;
-    // Score is a transparent ranking heuristic, not a probability.
-    const dynamicPenalty = dynamicFilters.reduce((sum,f)=>sum + (Number.isFinite(f.change) ? f.change : 100)*Math.min(1,10/Math.max(1,f.maxChange*10)),0);
-    const score = Math.max(0,100 - dynamicPenalty*4 - ( $("requirePriceRange").checked ? priceRange*0.7 : 0));
-    const status = pass ? (score >= 80 ? "Strong match" : "Match") : "Review";
-    return {symbol, last:close[end], sma100:smaNow, slope10, slope20, flatRange, priceRange, priceVsSma, volume, score, pass, passSlope10, passSlope20, passFlat, passPrice, passVolume, passDynamic, dynamicFilters, status, candles:closed};
+    const primaryInterval=filters[0]?.interval || "1d";
+    const primary=(candlesByInterval[primaryInterval]||[]).filter(c=>Number(c[6])<Date.now()-500);
+    const close=primary.map(c=>Number(c[4])), highs=primary.map(c=>Number(c[2])), lows=primary.map(c=>Number(c[3]));
+    const last=close.at(-1);
+    const primaryFilter=dynamicFilters[0];
+    const sma100=primaryFilter?.current ?? null;
+    const slope10=primaryFilter?.change ?? Infinity;
+    const slope20=dynamicFilters[1]?.change ?? Infinity;
+    const flatRange=NaN;
+    const n=Math.min(20,close.length);
+    const priceRange=n>=2?(Math.max(...highs.slice(-n))-Math.min(...lows.slice(-n)))/last*100:Infinity;
+    const priceVsSma=Number.isFinite(sma100)&&sma100!==0?(last/sma100-1)*100:NaN;
+    const passPrice=true;
+    const passVolume=true;
+    const passDynamic=dynamicFilters.every(f=>f.pass);
+    const pass=passDynamic;
+    const penalty=dynamicFilters.reduce((sum,f)=>sum+(Number.isFinite(f.change)?f.change:100),0);
+    const score=Math.max(0,100-penalty*4);
+    const status=pass?(score>=80?"Strong match":"Match"):"Review";
+    return {symbol,last,sma100,slope10,slope20,flatRange,priceRange,priceVsSma,volume,score,pass,passDynamic,passPrice,passVolume,dynamicFilters,status,candles:primary};
   }
   async function scanSymbols(symbols, append=false) {
-    if (state.running) return;
-    state.running=true; state.cancel=false; $("scanBtn").disabled=true; $("cancelBtn").disabled=false; $("retryBtn").disabled=true;
-    if (!append) { state.results=[]; state.errors=[]; }
-    const volumeMap = await loadVolumes();
-    const minVol = Number($("minVolume").value) || 0;
-    const exclude = $("excludeLeveraged").checked;
-    const filtered = symbols.filter(p => (!exclude || !isLeveraged(p.symbol)) && (minVol===0 || !volumeMap.has(p.symbol) || volumeMap.get(p.symbol)>=minVol));
-    const concurrency = Number($("concurrency").value);
-    let index=0, done=0, errCount=0;
-    $("loaderLine").style.display="flex";
-    $("loaderTitle").textContent="Scanning daily candles";
-    $("loaderDetail").textContent=`0 of ${filtered.length.toLocaleString()} pairs · ${concurrency} parallel requests`;
-    $("loaderPct").textContent="0%";
-    setProgress(0,filtered.length);
-    setStatus(`Scanning ${filtered.length.toLocaleString()} pairs with ${concurrency} parallel requests…`);
-    $("timeText").textContent = "Started " + new Date().toLocaleTimeString();
-    const workers = Array.from({length:concurrency}, async () => {
-      while (!state.cancel) {
-        const i=index++; if (i>=filtered.length) break;
+    if(state.running)return;
+    state.running=true;state.cancel=false;$("scanBtn").disabled=true;$("cancelBtn").disabled=false;$("retryBtn").disabled=true;
+    if(!append){state.results=[];state.errors=[];}
+    let volumeMap=new Map();
+    try {volumeMap=await loadVolumes();} catch(e){console.warn(e);}
+    const filtered=symbols.filter(p=>!isLeveraged(p.symbol));
+    const concurrency=5, intervals=[...new Set(getDynamicFilters().map(f=>f.interval))];
+    let index=0,done=0,errCount=0;
+    setProgress(0,filtered.length);$("loaderLine").style.display="flex";$("loaderTitle").textContent="Scanning market candles";
+    $("loaderDetail").textContent=`${filtered.length} pairs · intervals ${intervals.join(", ")} · ${concurrency} parallel workers`;$("loaderPct").textContent="0%";
+    setStatus(`Scanning ${filtered.length.toLocaleString()} pairs across ${intervals.length} timeframe(s)…`);
+    const workers=Array.from({length:concurrency},async()=>{
+      while(!state.cancel){
+        const i=index++;if(i>=filtered.length)break;
         const pair=filtered[i];
-        try {
-          const candles = await fetchJson(`/api/v3/klines?symbol=${encodeURIComponent(pair.symbol)}&interval=1d&limit=160`);
-          const volume = volumeMap.get(pair.symbol) ?? Number(candles[candles.length-1]?.[7] || 0);
-          const row=calcMetrics(pair.symbol,candles,volume);
-          state.results.push(row);
-        } catch(e) {
-          errCount++;
-          state.errors.push({symbol:pair.symbol,error:String(e.message || e)});
-          state.results.push({symbol:pair.symbol,error:String(e.message || e),pass:false,status:"Error",score:-1});
-        }
+        try{
+          const byInterval={};
+          for(const interval of intervals){
+            byInterval[interval]=await fetchJson(`/api/v3/klines?symbol=${encodeURIComponent(pair.symbol)}&interval=${encodeURIComponent(interval)}&limit=1000`);
+            await sleep(50);
+          }
+          const volume=volumeMap.get(pair.symbol)??0;
+          state.results.push(calculateSymbol(pair.symbol,byInterval,volume));
+        }catch(e){errCount++;state.errors.push({symbol:pair.symbol,error:String(e.message||e)});state.results.push({symbol:pair.symbol,error:String(e.message||e),pass:false,status:"Error",score:-1});}
         done++;
-        if (done%5===0 || done===filtered.length) {
-          setProgress(done,filtered.length);
-          $("loaderTitle").textContent=state.cancel ? "Stopping scan…" : "Scanning daily candles";
-          $("loaderDetail").textContent=`${done.toLocaleString()} of ${filtered.length.toLocaleString()} pairs processed · ${errCount} errors`;
-          $("loaderPct").textContent=`${filtered.length ? Math.round(done/filtered.length*100) : 100}%`;
-          $("statErrors").textContent=errCount.toLocaleString();
-          renderTable();
-          setStatus(state.cancel ? `Cancelled after ${done} pairs.` : `Scanned ${done.toLocaleString()} of ${filtered.length.toLocaleString()} pairs…`);
+        if(done%3===0||done===filtered.length){
+          setProgress(done,filtered.length);$("loaderTitle").textContent=state.cancel?"Stopping scan…":"Scanning market candles";
+          $("loaderDetail").textContent=`${done.toLocaleString()} / ${filtered.length.toLocaleString()} pairs · ${intervals.join(", ")} · ${errCount} errors`;
+          $("loaderPct").textContent=`${filtered.length?Math.round(done/filtered.length*100):100}%`;
+          $("statErrors").textContent=errCount.toLocaleString();renderTable();
+          setStatus(state.cancel?`Cancellation requested; ${done} pairs processed.`:`Scanned ${done.toLocaleString()} of ${filtered.length.toLocaleString()} pairs…`);
         }
-        // Small pacing gap per worker; retry/backoff handles 429s.
-        await sleep(150);
       }
     });
     await Promise.all(workers);
-    state.running=false; state.lastScanAt=new Date();
-    $("scanBtn").disabled=false; $("cancelBtn").disabled=true; $("retryBtn").disabled=state.errors.length===0; $("exportBtn").disabled=state.results.length===0;
-    $("statErrors").textContent=state.errors.length.toLocaleString();
-    setProgress(done,filtered.length);
-    renderTable();
-    const matches=state.results.filter(r=>r.pass).length;
-    $("statMatches").textContent=matches.toLocaleString();
-    setStatus(state.cancel ? `Scan cancelled. ${done} pairs processed; ${matches} matched.` : `Scan complete. ${done.toLocaleString()} pairs processed; ${matches.toLocaleString()} matches; ${state.errors.length} errors.`, state.errors.length ? "warn" : "good");
-    $("timeText").textContent = "Finished " + new Date().toLocaleTimeString();
-    $("loaderTitle").textContent=state.cancel ? "Scan cancelled" : "Scan finished";
-    $("loaderDetail").textContent=`${done.toLocaleString()} processed · ${matches.toLocaleString()} matches · ${state.errors.length} errors`;
-    $("loaderPct").textContent="100%";
-    $("loaderLine").style.display="flex";
+    state.running=false;state.lastScanAt=new Date();$("scanBtn").disabled=false;$("cancelBtn").disabled=true;
+    $("retryBtn").disabled=state.errors.length===0;$("exportBtn").disabled=state.results.length===0;
+    $("statErrors").textContent=state.errors.length.toLocaleString();setProgress(done,filtered.length);renderTable();
+    const matches=state.results.filter(r=>r.pass).length;$("statMatches").textContent=matches.toLocaleString();
+    setStatus(state.cancel?`Scan cancelled. ${done} pairs processed; ${matches} matched.`:`Scan complete. ${done.toLocaleString()} pairs processed; ${matches.toLocaleString()} matches; ${state.errors.length} errors.`,state.errors.length?"warn":"good");
+    $("timeText").textContent="Finished "+new Date().toLocaleTimeString();$("loaderTitle").textContent=state.cancel?"Scan cancelled":"Scan finished";
+    $("loaderDetail").textContent=`${done} processed · ${matches} matches · ${state.errors.length} errors`;$("loaderPct").textContent="100%";
   }
   function getVisibleRows() {
     let rows=[...state.results];
-    const query=$("search").value.trim().toUpperCase();
-    if(query) rows=rows.filter(r=>r.symbol?.includes(query));
-    if($("onlyMatches").checked) rows=rows.filter(r=>r.pass || r.error);
     const filter=$("tableFilter").value;
     if(filter==="strong") rows=rows.filter(r=>r.pass && r.score>=80);
     if(filter==="match") rows=rows.filter(r=>r.pass);
     if(filter==="failed") rows=rows.filter(r=>!r.pass && !r.error);
     if(filter==="errors") rows=rows.filter(r=>r.error);
-    const sort=$("sortBy").value;
-    rows.sort((a,b)=>{
-      if(sort==="slope10") return (a.slope10??Infinity)-(b.slope10??Infinity);
-      if(sort==="priceRange") return (a.priceRange??Infinity)-(b.priceRange??Infinity);
-      if(sort==="volume") return (b.volume??-1)-(a.volume??-1);
-      return (b.score??-1)-(a.score??-1);
-    });
+    rows.sort((a,b)=>(b.score??-1)-(a.score??-1));
     return rows;
   }
   function renderTable() {
     const rows=getVisibleRows();
     $("statMatches").textContent=state.results.filter(r=>r.pass).length.toLocaleString();
-    $("resultSummary").textContent=`Showing ${rows.length.toLocaleString()} of ${state.results.length.toLocaleString()} processed pairs · sorted by ${$("sortBy").selectedOptions[0].text.toLowerCase()}.`;
+    $("resultSummary").textContent=`Showing ${rows.length.toLocaleString()} of ${state.results.length.toLocaleString()} processed pairs · ranked by consolidation score.`;
     const body=$("resultsBody");
     if(!rows.length){body.innerHTML='<tr><td colspan="12" class="empty">No rows match the current filters.</td></tr>';return;}
     body.innerHTML=rows.map((r,i)=>{
@@ -367,16 +343,20 @@
   }
   renderDynamicFilters();
   $("filterCount").addEventListener("change",renderDynamicFilters);
-  $("scanBtn").addEventListener("click",async()=>{try{const pairs=await loadUniverse();await scanSymbols(pairs); }catch(e){$("loaderLine").style.display="flex";$("loaderTitle").textContent="Could not connect";$("loaderDetail").textContent=e.message;$("loaderPct").textContent="ERR";setStatus(e.message,"error");$("scanBtn").disabled=false;$("cancelBtn").disabled=true;}});
+  // Load the exchange universe immediately so a failed connection is visible without
+  // requiring a click. Scanning candles remains an explicit user action.
+  (async()=>{try{await loadUniverse();setStatus("Universe loaded. Configure filters, then click Scan.");}
+    catch(e){$("loaderLine").style.display="flex";$("loaderTitle").textContent="Market-data connection failed";
+      $("loaderDetail").textContent=e.message;$("loaderPct").textContent="ERR";$("connectionHelp").textContent=e.message;setStatus(e.message,"error");}})();
+  $("scanBtn").addEventListener("click",async()=>{try{const pairs=await loadUniverse();await scanSymbols(pairs); }catch(e){$("loaderLine").style.display="flex";$("loaderTitle").textContent="Could not connect";$("loaderDetail").textContent=e.message;$("loaderPct").textContent="ERR";$("connectionHelp").textContent=e.message;setStatus(e.message,"error");$("scanBtn").disabled=false;$("cancelBtn").disabled=true;}});
   $("cancelBtn").addEventListener("click",()=>{state.cancel=true;setStatus("Cancelling after in-flight requests finish…","warn");});
   $("exportBtn").addEventListener("click",exportCsv);
   $("retryBtn").addEventListener("click",async()=>{const syms=state.errors.map(e=>({symbol:e.symbol}));const failed=new Set(syms.map(x=>x.symbol));state.results=state.results.filter(r=>!failed.has(r.symbol) || !r.error);state.errors=[];await scanSymbols(syms,true);});
   $("clearBtn").addEventListener("click",()=>{if(state.running)return;state.results=[];state.errors=[];setProgress(0,0);$("statMatches").textContent="0";$("statErrors").textContent="0";$("exportBtn").disabled=true;$("retryBtn").disabled=true;renderTable();setStatus("Results cleared.");});
-  $("search").addEventListener("input",renderTable);$("tableFilter").addEventListener("change",renderTable);$("sortBy").addEventListener("change",renderTable);$("onlyMatches").addEventListener("change",renderTable);
+  $("tableFilter").addEventListener("change",renderTable);
   $("closeChart").addEventListener("click",()=>{$("chartPanel").style.display="none";if(state.chart){state.chart.remove();state.chart=null;}});
-  document.querySelectorAll("th[data-key]").forEach(th=>th.addEventListener("click",()=>{const key=th.dataset.key;if(["slope10","priceRange","score","volume"].includes(key)){$("sortBy").value=key;renderTable();}}));
+  document.querySelectorAll("th[data-key]").forEach(th=>th.addEventListener("click",()=>{if(th.dataset.key==="symbol")state.results.reverse();else if(th.dataset.key==="priceRange")state.results.sort((a,b)=>(a.priceRange??Infinity)-(b.priceRange??Infinity));else state.results.sort((a,b)=>(b.score??-1)-(a.score??-1));renderTable();}));
   // Friendly preflight note: a browser can only scan if the data host permits cross-origin requests.
-  setStatus("Ready. Search filters scanned results only. Click Scan to load and screen the Binance USDT universe.");
 })();
 </script>
 </body>
