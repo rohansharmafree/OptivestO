@@ -51,6 +51,10 @@
       <button class="btn" id="clearBtn">Clear results</button>
     </div>
     <div class="notice">Uses completed candles for each filter’s selected timeframe. A full scan may take several minutes. Keep this browser tab open while scanning.</div>
+    <div id="loaderLine" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px;margin:8px 0;background:#0c1425;border:1px solid #263652;border-radius:8px;font-size:12px;">
+      <div style="min-width:0"><strong id="loaderTitle">Connecting to Binance…</strong><div id="loaderDetail" style="opacity:.75;margin-top:3px;overflow-wrap:anywhere">Loading Spot trading-pair metadata</div></div>
+      <strong id="loaderPct" style="flex-shrink:0">…</strong>
+    </div>
     <div class="progress"><div class="bar" id="progressBar"></div></div>
     <div class="statusrow"><div class="status" id="statusText">Connecting to Binance public market data…</div><div class="status" id="timeText"></div></div>
     <div class="notice" id="connectionHelp">For local testing, serve this folder over http://localhost (do not open index.html directly as a file).</div>
@@ -92,39 +96,43 @@
     $("statScanned").textContent = done.toLocaleString();
     $("statProgress").textContent = total ? `${pct.toFixed(1)}% complete` : "Waiting to start";
   }
-  async function fetchJson(path, retries=2) {
-    let lastErr;
+  async function fetchJson(path, retries=1) {
+    let failures = [];
     for (const host of APIS) {
       for (let attempt=0; attempt<=retries; attempt++) {
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 15000);
+        const timer = setTimeout(() => controller.abort(), 10000);
         try {
-          const res = await fetch(host + path, {cache:"no-store", signal:controller.signal});
+          setStatus(`Requesting ${new URL(host).host}${path.split("?")[0]}${attempt ? ` (retry ${attempt})` : ""}…`);
+          const res = await fetch(host + path, {cache:"no-store", mode:"cors", signal:controller.signal});
           if (res.status === 429 || res.status === 418) {
-            const ra = Number(res.headers.get("Retry-After") || 3);
-            if (attempt < retries) { await sleep(Math.max(ra*1000, 1500*(attempt+1))); continue; }
-            throw new Error(`Rate limited by ${new URL(host).host} (HTTP ${res.status})`);
+            const msg = `${new URL(host).host}: HTTP ${res.status} (rate limited)`;
+            failures.push(msg);
+            if (attempt < retries) { await sleep(1200*(attempt+1)); continue; }
+            break;
           }
-          if (!res.ok) throw new Error(`${new URL(host).host} returned HTTP ${res.status}`);
-          return await res.json();
+          if (!res.ok) {
+            failures.push(`${new URL(host).host}: HTTP ${res.status}`);
+            break;
+          }
+          const payload = await res.json();
+          if (payload && payload.code && payload.msg) throw new Error(`${new URL(host).host}: Binance API ${payload.code} — ${payload.msg}`);
+          return payload;
         } catch (e) {
-          lastErr = e;
-          if (attempt < retries) await sleep(700*(attempt+1));
+          const msg = e?.name === "AbortError" ? `${new URL(host).host}: timed out after 10 seconds` : `${new URL(host).host}: ${e?.message || "fetch failed"}`;
+          failures.push(msg);
+          // TypeError: Failed to fetch is usually CORS, network filtering, or a blocked request.
+          break;
         } finally { clearTimeout(timer); }
       }
     }
-    const localFile = location.protocol === "file:";
-    const reason = lastErr?.name === "AbortError" ? "Request timed out." : (lastErr?.message || "Network/CORS error.");
-    const localHint = localFile ? " You opened index.html directly (file://). Start a local web server first: open Command Prompt in this folder and run: py -m http.server 8000, then visit http://localhost:8000." : " If this page is already running on localhost and the direct API test works, a browser extension, firewall, ISP, or Binance CORS/network restriction may be blocking JavaScript requests.";
-    throw new Error(`Could not reach Binance market data. ${reason}${localHint}`);
+    const detail = failures.slice(-4).join(" | ");
+    throw new Error(`Binance request failed for ${path.split("?")[0]}. ${detail}. Opening an API URL directly is not the same as allowing JavaScript fetch (CORS). Press F12 → Console to see browser details. If every host fails, this static page needs a reachable CORS-enabled endpoint or a small proxy.`);
   }
   function isLeveraged(symbol) { return /(UP|DOWN|BULL|BEAR)USDT$/.test(symbol) || /^(UP|DOWN|BULL|BEAR)/.test(symbol.replace(/USDT$/,"")); }
   async function loadUniverse() {
-    $("loaderLine").style.display="flex";
-    $("loaderTitle").textContent="Connecting to Binance…";
-    $("loaderDetail").textContent="Loading Spot trading-pair metadata";
-    $("loaderPct").textContent="…";
     setStatus("Connecting to Binance public market data…");
+    $("connectionHelp").textContent = "Requesting Spot trading-pair metadata from Binance…";
     const data = await fetchJson(`/api/v3/exchangeInfo`);
     // Binance may return permissions: [] while permissionSets contains SPOT.
     // Do not require permissions[] to contain SPOT or all pairs may be filtered out.
@@ -137,9 +145,8 @@
     }).map(s => ({symbol:s.symbol, base:s.baseAsset, quote:s.quoteAsset}));
     state.universe = pairs;
     $("statUniverse").textContent = pairs.length.toLocaleString();
-    $("loaderTitle").textContent="Universe loaded";
-    $("loaderDetail").textContent=`Found ${pairs.length.toLocaleString()} eligible Spot USDT pairs`;
-    $("loaderPct").textContent="OK";
+    $("connectionHelp").textContent = `Loaded ${pairs.length.toLocaleString()} eligible Spot USDT pairs from Binance.`;
+    if (!pairs.length) throw new Error("Binance returned exchange metadata, but no pairs passed the current Spot/USDT/TRADING filter. The symbol permissions filter needs adjustment.");
     return pairs;
   }
   async function loadVolumes() {
@@ -346,9 +353,8 @@
   // Load the exchange universe immediately so a failed connection is visible without
   // requiring a click. Scanning candles remains an explicit user action.
   (async()=>{try{await loadUniverse();setStatus("Universe loaded. Configure filters, then click Scan.");}
-    catch(e){$("loaderLine").style.display="flex";$("loaderTitle").textContent="Market-data connection failed";
-      $("loaderDetail").textContent=e.message;$("loaderPct").textContent="ERR";$("connectionHelp").textContent=e.message;setStatus(e.message,"error");}})();
-  $("scanBtn").addEventListener("click",async()=>{try{const pairs=await loadUniverse();await scanSymbols(pairs); }catch(e){$("loaderLine").style.display="flex";$("loaderTitle").textContent="Could not connect";$("loaderDetail").textContent=e.message;$("loaderPct").textContent="ERR";$("connectionHelp").textContent=e.message;setStatus(e.message,"error");$("scanBtn").disabled=false;$("cancelBtn").disabled=true;}});
+    catch(e){$("connectionHelp").textContent=e.message;setStatus("Market-data request failed: "+e.message,"error");console.error("Screener startup/API failure:",e);}})();
+  $("scanBtn").addEventListener("click",async()=>{try{const pairs=await loadUniverse();await scanSymbols(pairs); }catch(e){$("connectionHelp").textContent=e.message;setStatus("Scan could not start: "+e.message,"error");console.error("Screener scan failure:",e);$("scanBtn").disabled=false;$("cancelBtn").disabled=true;}});
   $("cancelBtn").addEventListener("click",()=>{state.cancel=true;setStatus("Cancelling after in-flight requests finish…","warn");});
   $("exportBtn").addEventListener("click",exportCsv);
   $("retryBtn").addEventListener("click",async()=>{const syms=state.errors.map(e=>({symbol:e.symbol}));const failed=new Set(syms.map(x=>x.symbol));state.results=state.results.filter(r=>!failed.has(r.symbol) || !r.error);state.errors=[];await scanSymbols(syms,true);});

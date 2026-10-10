@@ -1,15 +1,17 @@
-# Crypto 100 SMA Screener — local test and GitHub Pages
+# Crypto 100 SMA Screener — Fixed v4
 
-## Test locally on Windows
-1. Extract this ZIP. The `index.html` file and `start_local.bat` must be in the same folder.
+## Windows 11 local test
+1. Extract the ZIP into a folder.
 2. Double-click `start_local.bat`.
-3. Keep the **Crypto Screener Server** command window open. Open `http://127.0.0.1:8000/`.
-4. If the browser reports connection refused, read the server command window. The server did not start. The batch file will say if Python is missing.
+3. Keep the server command window open.
+4. Visit http://127.0.0.1:8000/ in Chrome.
 
-Python is required for this local server. Install it from https://www.python.org/downloads/windows/ and select **Add python.exe to PATH** during installation.
+Do not open `index.html` directly as a file. The batch file starts Python's built-in HTTP server.
 
-## GitHub Pages deployment
-Upload/replace these files directly in the **repository root** (not inside another folder): `index.html`, `.nojekyll`. Commit the change and wait for GitHub Pages to redeploy, then hard-refresh with Ctrl+Shift+R. Check that the deployed page shows the new single-filter layout and automatically attempts to load the Binance Spot USDT universe on page load.
+## What's fixed
+The prior diagnostic build attempted to access loader elements (`loaderLine`, `loaderTitle`, `loaderDetail`, `loaderPct`) that were missing from the page. This caused `Cannot read properties of null (reading 'style')` before the Binance symbol request could complete. This version adds those elements and keeps error details visible.
 
-## Binance connection
-The screener uses Binance public market-data endpoints and requires no API key. Opening https://data-api.binance.vision/api/v3/ping and seeing `{}` confirms the endpoint is reachable as a webpage, but does not by itself prove JavaScript fetch/CORS requests work from the screener. If the page reports an API error, capture the exact message and browser DevTools Console (F12 → Console).
+## GitHub Pages
+Upload/replace `index.html` in the repository folder published by GitHub Pages. Commit the change, wait for the Pages deployment, then hard-refresh the site (Ctrl+Shift+R). Keep `.nojekyll` in the published root if already used.
+
+This is a static browser-only app. Binance API access can still depend on network and browser CORS behavior. A successful scan has not been verified until the pair count loads and the scan completes in your browser.
