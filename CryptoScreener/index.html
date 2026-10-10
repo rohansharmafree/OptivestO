@@ -11,8 +11,10 @@
 .wrap{max-width:1500px;margin:auto;padding:24px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:20px}.brand{display:flex;align-items:center;gap:12px}.logo{width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,#52d6a3,#75a7ff);display:grid;place-items:center;color:#08111f;font-size:22px;font-weight:900}.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--green);font-weight:800}.title{font-size:clamp(22px,3vw,34px);font-weight:800;letter-spacing:-.03em;margin:0}.sub{color:var(--muted);margin-top:4px}.tag{border:1px solid var(--line);background:#111a2d;padding:8px 12px;border-radius:999px;color:var(--muted);white-space:nowrap}
 .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0}.stat,.panel{background:linear-gradient(180deg,rgba(22,33,55,.96),rgba(17,25,43,.96));border:1px solid var(--line);border-radius:16px}.stat{padding:16px}.stat .label{color:var(--muted);font-size:12px}.stat .value{font-size:26px;font-weight:800;margin-top:5px}.stat .hint{font-size:11px;color:var(--muted);margin-top:4px}
 .panel{padding:18px;margin-bottom:14px}.panel h2{font-size:15px;margin:0 0 14px}.controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}.field input,.field select{width:100%;background:#0c1425;border:1px solid #30405e;border-radius:9px;color:var(--text);padding:10px 11px;outline:none}.field input:focus,.field select:focus{border-color:var(--blue)}.checks{display:flex;flex-wrap:wrap;gap:16px;margin-top:14px;color:var(--muted);font-size:12px}.checks label{display:flex;gap:7px;align-items:center}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}.btn{border:1px solid #354562;background:#1b2942;color:var(--text);padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}.btn.primary{background:var(--green);color:#07141a;border-color:var(--green)}.btn:disabled{opacity:.45;cursor:not-allowed}.btn:hover:not(:disabled){filter:brightness(1.08)}.notice{font-size:12px;color:var(--muted);margin-top:12px}.statusrow{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin:10px 0 14px}.progress{height:7px;background:#202d45;border-radius:99px;overflow:hidden;margin-top:8px}.bar{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--blue));transition:width .2s}.status{color:var(--muted);font-size:12px}.tablehead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}.tabletools{display:flex;gap:8px;flex-wrap:wrap}.tabletools input,.tabletools select{background:#0c1425;color:var(--text);border:1px solid #30405e;border-radius:9px;padding:9px}.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:12px}table{border-collapse:collapse;width:100%;min-width:1000px;font-variant-numeric:tabular-nums}th,td{padding:11px 12px;text-align:right;border-bottom:1px solid #25314a;white-space:nowrap}th{position:sticky;top:0;background:#172238;color:#aebed8;font-size:11px;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;z-index:1}th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}tbody tr:hover{background:#18253b}tbody tr:last-child td{border-bottom:0}.symbol{font-weight:800;color:#f2f6ff}.subtle{font-size:11px;color:var(--muted)}.pill{display:inline-block;border-radius:99px;padding:3px 8px;font-size:10px;font-weight:800}.strong{background:#153f36;color:#6ce5b4}.match{background:#3c351d;color:#f3d37b}.review{background:#3a2630;color:#ff9da6}.link{color:var(--blue);text-decoration:none}.empty{padding:35px;text-align:center;color:var(--muted)}.footer{font-size:11px;color:var(--muted);padding:6px 2px 20px}.error{color:var(--red)}.good{color:var(--green)}.warn{color:var(--amber)}.smallbtn{font-size:11px;padding:5px 8px}.chartbox{height:360px;width:100%;display:none}.disclaimer{border-left:3px solid var(--amber);padding:10px 12px;background:#29251b;border-radius:0 9px 9px 0;color:#e7d7a9;font-size:12px;margin-top:12px}
+
+.loaderline{display:flex;align-items:center;gap:12px;margin-top:14px;padding:12px;border:1px solid #30405e;background:#0d1729;border-radius:12px}.spinner{width:22px;height:22px;border:3px solid #31415c;border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;flex:0 0 auto}@keyframes spin{to{transform:rotate(360deg)}}.loadercopy{display:flex;flex-direction:column;gap:2px;flex:1}.loadercopy b{font-size:12px}.loadercopy span{font-size:11px;color:var(--muted)}.loaderpct{font-weight:800;color:var(--green);font-variant-numeric:tabular-nums}.filterbuilder{border:1px solid #30405e;background:#0d1729;border-radius:12px;padding:14px;margin-bottom:18px}.filtertop{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.filtercount{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px}.filtercount select,.filterrow select,.filterrow input{background:#111c30;color:var(--text);border:1px solid #354562;border-radius:8px;padding:8px;min-width:0;width:100%}.dynamicfilters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:12px}.filterrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;border:1px solid #273752;border-radius:10px;padding:10px}.filterrow .filtername{grid-column:1/-1;font-size:12px;font-weight:800;color:var(--green)}.filterrow label{font-size:10px;color:var(--muted);display:block;margin-bottom:4px}.filterrow .field{min-width:0}.filterrow .wide{grid-column:1/-1}
 @media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.controls{grid-template-columns:repeat(2,minmax(0,1fr))}.top{align-items:flex-start;flex-direction:column}.tag{white-space:normal}}
-@media(max-width:520px){.wrap{padding:14px}.grid{gap:8px}.stat{padding:12px}.stat .value{font-size:22px}.controls{grid-template-columns:1fr}.panel{padding:13px}}
+@media(max-width:700px){.dynamicfilters{grid-template-columns:1fr}}\n@media(max-width:520px){.wrap{padding:14px}.grid{gap:8px}.stat{padding:12px}.stat .value{font-size:22px}.controls{grid-template-columns:1fr}.panel{padding:13px}}
 </style>
 </head>
 <body>
@@ -34,6 +36,12 @@
 
   <section class="panel">
     <h2>Screening settings</h2>
+    <div class="filterbuilder">
+      <div class="filtertop"><div><b>Custom moving-average filters</b><div class="subtle">Choose how many conditions to combine. Every enabled condition must pass.</div></div>
+      <div class="filtercount"><label for="filterCount">Number of filters</label><select id="filterCount"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></div></div>
+      <div id="dynamicFilters" class="dynamicfilters"></div>
+      <div class="subtle">For each filter: choose SMA/EMA, its moving-average length, the lookback period used to measure flatness, and the maximum permitted change (%). Example: SMA 100 with a 10-day lookback and max change 1%.</div>
+    </div>
     <div class="controls">
       <div class="field"><label for="slope10">Max 10-day SMA change (%)</label><input id="slope10" type="number" min="0.05" max="20" step="0.05" value="1.0"></div>
       <div class="field"><label for="slope20">Max 20-day SMA change (%)</label><input id="slope20" type="number" min="0.05" max="30" step="0.05" value="2.0"></div>
@@ -42,7 +50,7 @@
       <div class="field"><label for="minVolume">Minimum 24h quote volume (USDT)</label><input id="minVolume" type="number" min="0" step="100000" value="0"></div>
       <div class="field"><label for="concurrency">Parallel requests</label><select id="concurrency"><option value="3">3 · Conservative</option><option value="5" selected>5 · Recommended</option><option value="8">8 · Faster, more rate-limit risk</option></select></div>
       <div class="field"><label for="sortBy">Initial ranking</label><select id="sortBy"><option value="score">Best consolidation score</option><option value="slope10">Flattest 10-day SMA</option><option value="priceRange">Narrowest price range</option><option value="volume">Highest 24h volume</option></select></div>
-      <div class="field"><label for="search">Filter current results</label><input id="search" type="search" placeholder="e.g. BTC, ETH, SOL"></div>
+      <div class="field"><label for="search">Filter scanned results</label><input id="search" type="search" placeholder="e.g. BTC, ETH, SOL"></div>
     </div>
     <div class="checks">
       <label><input id="excludeLeveraged" type="checkbox" checked> Exclude likely leveraged tokens (UP/DOWN/BULL/BEAR)</label>
@@ -83,7 +91,7 @@
 <script>
 (() => {
   "use strict";
-  const API = "https://data-api.binance.vision";
+  const APIS = ["https://data-api.binance.vision", "https://api.binance.com"];
   const $ = id => document.getElementById(id);
   const state = { universe: [], results: [], running: false, cancel: false, errors: [], chart: null, candleSeries: null, smaSeries: null, lastScanAt: null };
   const fmt = (n, d=2) => Number.isFinite(n) ? n.toLocaleString(undefined,{maximumFractionDigits:d,minimumFractionDigits:0}) : "—";
@@ -97,40 +105,104 @@
     $("statScanned").textContent = done.toLocaleString();
     $("statProgress").textContent = total ? `${pct.toFixed(1)}% complete` : "Waiting to start";
   }
-  async function fetchJson(url, retries=3) {
+  async function fetchJson(path, retries=2) {
     let lastErr;
-    for (let attempt=0; attempt<=retries; attempt++) {
-      try {
-        const res = await fetch(url, {cache:"no-store"});
-        if (res.status === 429 || res.status === 418) {
-          const ra = Number(res.headers.get("Retry-After") || 2);
-          if (attempt < retries) { await sleep(Math.max(ra*1000, 1500*(attempt+1))); continue; }
-          throw new Error(`Rate limited (HTTP ${res.status}); wait and scan again.`);
-        }
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return await res.json();
-      } catch (e) {
-        lastErr = e;
-        if (attempt < retries && !(String(e.message).includes("Rate limited"))) await sleep(600*(attempt+1));
+    for (const host of APIS) {
+      for (let attempt=0; attempt<=retries; attempt++) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 15000);
+        try {
+          const res = await fetch(host + path, {cache:"no-store", signal:controller.signal});
+          if (res.status === 429 || res.status === 418) {
+            const ra = Number(res.headers.get("Retry-After") || 3);
+            if (attempt < retries) { await sleep(Math.max(ra*1000, 1500*(attempt+1))); continue; }
+            throw new Error(`Rate limited by ${new URL(host).host} (HTTP ${res.status})`);
+          }
+          if (!res.ok) throw new Error(`${new URL(host).host} returned HTTP ${res.status}`);
+          return await res.json();
+        } catch (e) {
+          lastErr = e;
+          if (attempt < retries) await sleep(700*(attempt+1));
+        } finally { clearTimeout(timer); }
       }
     }
-    throw lastErr || new Error("Request failed");
+    throw new Error(`Could not reach Binance market data. ${lastErr?.name === "AbortError" ? "Request timed out." : (lastErr?.message || "Network/CORS error.")} Check browser internet access, extensions, or regional API availability.`);
   }
   function isLeveraged(symbol) { return /(UP|DOWN|BULL|BEAR)USDT$/.test(symbol) || /^(UP|DOWN|BULL|BEAR)/.test(symbol.replace(/USDT$/,"")); }
   async function loadUniverse() {
-    setStatus("Loading Binance Spot trading pairs…");
-    const data = await fetchJson(`${API}/api/v3/exchangeInfo`);
-    const pairs = data.symbols.filter(s => s.status === "TRADING" && s.isSpotTradingAllowed !== false && s.quoteAsset === "USDT" && s.permissions?.includes?.("SPOT") !== false)
-      .map(s => ({symbol:s.symbol, base:s.baseAsset, quote:s.quoteAsset}));
+    $("loaderLine").style.display="flex";
+    $("loaderTitle").textContent="Connecting to Binance…";
+    $("loaderDetail").textContent="Loading Spot trading-pair metadata";
+    $("loaderPct").textContent="…";
+    setStatus("Connecting to Binance public market data…");
+    const data = await fetchJson(`/api/v3/exchangeInfo`);
+    // Binance may return permissions: [] while permissionSets contains SPOT.
+    // Do not require permissions[] to contain SPOT or all pairs may be filtered out.
+    const pairs = data.symbols.filter(s => {
+      const spotPermission = Array.isArray(s.permissions) && s.permissions.includes("SPOT");
+      const spotPermissionSet = Array.isArray(s.permissionSets) &&
+        s.permissionSets.some(set => Array.isArray(set) && set.includes("SPOT"));
+      const spotAllowed = s.isSpotTradingAllowed === true || spotPermission || spotPermissionSet;
+      return s.status === "TRADING" && s.quoteAsset === "USDT" && spotAllowed;
+    }).map(s => ({symbol:s.symbol, base:s.baseAsset, quote:s.quoteAsset}));
     state.universe = pairs;
     $("statUniverse").textContent = pairs.length.toLocaleString();
+    $("loaderTitle").textContent="Universe loaded";
+    $("loaderDetail").textContent=`Found ${pairs.length.toLocaleString()} eligible Spot USDT pairs`;
+    $("loaderPct").textContent="OK";
     return pairs;
   }
   async function loadVolumes() {
     try {
-      const data = await fetchJson(`${API}/api/v3/ticker/24hr`);
+      const data = await fetchJson(`/api/v3/ticker/24hr`);
       return new Map(data.filter(x => x.symbol.endsWith("USDT")).map(x => [x.symbol, Number(x.quoteVolume)]));
     } catch (e) { console.warn("24h volume unavailable; volume filter will be skipped.",e); return new Map(); }
+  }
+  function renderDynamicFilters() {
+    const count = Number($("filterCount").value || 1);
+    const host = $("dynamicFilters");
+    const prior = [...host.querySelectorAll(".filterrow")].map(row => ({
+      type: row.querySelector(".maType").value,
+      length: row.querySelector(".maLength").value,
+      lookback: row.querySelector(".maLookback").value,
+      maxChange: row.querySelector(".maMax").value
+    }));
+    host.innerHTML = Array.from({length:count}, (_,i) => {
+      const p = prior[i] || [{type:"SMA",length:"100",lookback:"10",maxChange:"1.0"},
+                            {type:"SMA",length:"100",lookback:"20",maxChange:"2.0"},
+                            {type:"SMA",length:"100",lookback:"10",maxChange:"1.5"},
+                            {type:"EMA",length:"50",lookback:"10",maxChange:"1.5"},
+                            {type:"SMA",length:"200",lookback:"20",maxChange:"2.5"}][i];
+      return `<div class="filterrow">
+        <div class="filtername">Filter ${i+1}</div>
+        <div class="field"><label>Moving average</label><select class="maType"><option ${p.type==="SMA"?"selected":""}>SMA</option><option ${p.type==="EMA"?"selected":""}>EMA</option></select></div>
+        <div class="field"><label>MA length (candles)</label><input class="maLength" type="number" min="2" max="500" value="${p.length}"></div>
+        <div class="field"><label>Lookback (days)</label><input class="maLookback" type="number" min="1" max="100" value="${p.lookback}"></div>
+        <div class="field"><label>Max change (%)</label><input class="maMax" type="number" min="0.01" max="100" step="0.05" value="${p.maxChange}"></div>
+      </div>`;
+    }).join("");
+  }
+  function getDynamicFilters() {
+    return [...$("dynamicFilters").querySelectorAll(".filterrow")].map((row,i)=>({
+      index:i+1, type:row.querySelector(".maType").value,
+      length:Math.max(2,Number(row.querySelector(".maLength").value)||100),
+      lookback:Math.max(1,Number(row.querySelector(".maLookback").value)||10),
+      maxChange:Math.max(0.01,Number(row.querySelector(".maMax").value)||1)
+    }));
+  }
+  function movingAverage(values, length, type) {
+    const out = Array(values.length).fill(null);
+    if(type==="EMA") {
+      const k=2/(length+1); let prev=null;
+      for(let i=0;i<values.length;i++) {
+        if(i===length-1) { prev=values.slice(0,length).reduce((a,b)=>a+b,0)/length; out[i]=prev; }
+        else if(i>=length) { prev=values[i]*k+prev*(1-k); out[i]=prev; }
+      }
+    } else {
+      let sum=0;
+      for(let i=0;i<values.length;i++){sum+=values[i];if(i>=length)sum-=values[i-length];if(i>=length-1)out[i]=sum/length;}
+    }
+    return out;
   }
   function calcMetrics(symbol, candles, volume) {
     // Binance kline: [openTime, open, high, low, close, volume, closeTime, quoteVolume, ...]
@@ -160,11 +232,19 @@
     const passFlat = flatRange <= Number($("flatRange").value);
     const passPrice = priceRange <= Number($("priceRange").value);
     const passVolume = volume >= Number($("minVolume").value);
-    const pass = passSlope10 && passSlope20 && passFlat && (!$("requirePriceRange").checked || passPrice) && passVolume;
+    const dynamicFilters = getDynamicFilters().map(f => {
+      const ma = movingAverage(close, f.length, f.type);
+      const current = ma[end], past = ma[end-f.lookback];
+      const change = (Number.isFinite(current) && Number.isFinite(past) && past !== 0) ? Math.abs((current/past-1)*100) : Infinity;
+      return {...f, current, change, pass:change <= f.maxChange};
+    });
+    const passDynamic = dynamicFilters.every(f => f.pass);
+    const pass = passDynamic && (!$("requirePriceRange").checked || passPrice) && passVolume;
     // Score is a transparent ranking heuristic, not a probability.
-    const score = Math.max(0,100 - slope10*20 - slope20*8 - flatRange*10 - ( $("requirePriceRange").checked ? priceRange*0.7 : 0));
+    const dynamicPenalty = dynamicFilters.reduce((sum,f)=>sum + (Number.isFinite(f.change) ? f.change : 100)*Math.min(1,10/Math.max(1,f.maxChange*10)),0);
+    const score = Math.max(0,100 - dynamicPenalty*4 - ( $("requirePriceRange").checked ? priceRange*0.7 : 0));
     const status = pass ? (score >= 80 ? "Strong match" : "Match") : "Review";
-    return {symbol, last:close[end], sma100:smaNow, slope10, slope20, flatRange, priceRange, priceVsSma, volume, score, pass, passSlope10, passSlope20, passFlat, passPrice, passVolume, status, candles:closed};
+    return {symbol, last:close[end], sma100:smaNow, slope10, slope20, flatRange, priceRange, priceVsSma, volume, score, pass, passSlope10, passSlope20, passFlat, passPrice, passVolume, passDynamic, dynamicFilters, status, candles:closed};
   }
   async function scanSymbols(symbols, append=false) {
     if (state.running) return;
@@ -176,6 +256,10 @@
     const filtered = symbols.filter(p => (!exclude || !isLeveraged(p.symbol)) && (minVol===0 || !volumeMap.has(p.symbol) || volumeMap.get(p.symbol)>=minVol));
     const concurrency = Number($("concurrency").value);
     let index=0, done=0, errCount=0;
+    $("loaderLine").style.display="flex";
+    $("loaderTitle").textContent="Scanning daily candles";
+    $("loaderDetail").textContent=`0 of ${filtered.length.toLocaleString()} pairs · ${concurrency} parallel requests`;
+    $("loaderPct").textContent="0%";
     setProgress(0,filtered.length);
     setStatus(`Scanning ${filtered.length.toLocaleString()} pairs with ${concurrency} parallel requests…`);
     $("timeText").textContent = "Started " + new Date().toLocaleTimeString();
@@ -184,7 +268,7 @@
         const i=index++; if (i>=filtered.length) break;
         const pair=filtered[i];
         try {
-          const candles = await fetchJson(`${API}/api/v3/klines?symbol=${encodeURIComponent(pair.symbol)}&interval=1d&limit=130`);
+          const candles = await fetchJson(`/api/v3/klines?symbol=${encodeURIComponent(pair.symbol)}&interval=1d&limit=160`);
           const volume = volumeMap.get(pair.symbol) ?? Number(candles[candles.length-1]?.[7] || 0);
           const row=calcMetrics(pair.symbol,candles,volume);
           state.results.push(row);
@@ -196,6 +280,9 @@
         done++;
         if (done%5===0 || done===filtered.length) {
           setProgress(done,filtered.length);
+          $("loaderTitle").textContent=state.cancel ? "Stopping scan…" : "Scanning daily candles";
+          $("loaderDetail").textContent=`${done.toLocaleString()} of ${filtered.length.toLocaleString()} pairs processed · ${errCount} errors`;
+          $("loaderPct").textContent=`${filtered.length ? Math.round(done/filtered.length*100) : 100}%`;
           $("statErrors").textContent=errCount.toLocaleString();
           renderTable();
           setStatus(state.cancel ? `Cancelled after ${done} pairs.` : `Scanned ${done.toLocaleString()} of ${filtered.length.toLocaleString()} pairs…`);
@@ -214,6 +301,10 @@
     $("statMatches").textContent=matches.toLocaleString();
     setStatus(state.cancel ? `Scan cancelled. ${done} pairs processed; ${matches} matched.` : `Scan complete. ${done.toLocaleString()} pairs processed; ${matches.toLocaleString()} matches; ${state.errors.length} errors.`, state.errors.length ? "warn" : "good");
     $("timeText").textContent = "Finished " + new Date().toLocaleTimeString();
+    $("loaderTitle").textContent=state.cancel ? "Scan cancelled" : "Scan finished";
+    $("loaderDetail").textContent=`${done.toLocaleString()} processed · ${matches.toLocaleString()} matches · ${state.errors.length} errors`;
+    $("loaderPct").textContent="100%";
+    $("loaderLine").style.display="flex";
   }
   function getVisibleRows() {
     let rows=[...state.results];
@@ -274,7 +365,9 @@
     $("chartPanel").scrollIntoView({behavior:"smooth",block:"start"});
     if(window.ResizeObserver){new ResizeObserver(()=>{if(state.chart)state.chart.applyOptions({width:box.clientWidth});}).observe(box);}
   }
-  $("scanBtn").addEventListener("click",async()=>{try{const pairs=await loadUniverse();await scanSymbols(pairs);}catch(e){setStatus(`Could not load Binance data: ${e.message}. Try again later or check whether the API is reachable from your network.`,`error`);$("scanBtn").disabled=false;}});
+  renderDynamicFilters();
+  $("filterCount").addEventListener("change",renderDynamicFilters);
+  $("scanBtn").addEventListener("click",async()=>{try{const pairs=await loadUniverse();await scanSymbols(pairs); }catch(e){$("loaderLine").style.display="flex";$("loaderTitle").textContent="Could not connect";$("loaderDetail").textContent=e.message;$("loaderPct").textContent="ERR";setStatus(e.message,"error");$("scanBtn").disabled=false;$("cancelBtn").disabled=true;}});
   $("cancelBtn").addEventListener("click",()=>{state.cancel=true;setStatus("Cancelling after in-flight requests finish…","warn");});
   $("exportBtn").addEventListener("click",exportCsv);
   $("retryBtn").addEventListener("click",async()=>{const syms=state.errors.map(e=>({symbol:e.symbol}));const failed=new Set(syms.map(x=>x.symbol));state.results=state.results.filter(r=>!failed.has(r.symbol) || !r.error);state.errors=[];await scanSymbols(syms,true);});
@@ -283,7 +376,7 @@
   $("closeChart").addEventListener("click",()=>{$("chartPanel").style.display="none";if(state.chart){state.chart.remove();state.chart=null;}});
   document.querySelectorAll("th[data-key]").forEach(th=>th.addEventListener("click",()=>{const key=th.dataset.key;if(["slope10","priceRange","score","volume"].includes(key)){$("sortBy").value=key;renderTable();}}));
   // Friendly preflight note: a browser can only scan if the data host permits cross-origin requests.
-  setStatus("Ready. Public Binance market data requires no API key. Click Scan to begin.");
+  setStatus("Ready. Search filters scanned results only. Click Scan to load and screen the Binance USDT universe.");
 })();
 </script>
 </body>
