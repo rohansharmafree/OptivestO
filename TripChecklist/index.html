@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#087f8c">
-<title>Goa Trip Packing Checklist</title>
+<title>Trip Packing Checklist</title>
 <style>
 :root{--ink:#17313b;--muted:#617780;--teal:#087f8c;--sea:#e8f7f6;--line:#dce8e9;--paper:#fff;--bg:#f4f8f8}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
@@ -75,7 +75,7 @@ const defaults = [
 {title:"Group essentials",icon:"🎒",items:["Bluetooth speaker (if permitted)","Playing cards / UNO","Camera and accessories","Small backpack for day trips","Shared booking details saved offline","Emergency contacts","Snacks for the journey"]},
 {title:"Before leaving home",icon:"🏠",items:["Check all tickets and IDs","Charge phone and power bank","Download maps and booking details","Check weather forecast","Lock doors and windows","Switch off unnecessary electrical appliances","Confirm transport and hotel check-in"]}
 ];
-const KEY="goaPackingChecklist_v1";
+const KEY="PackingChecklist_v1";
 let state={checked:{},custom:[],people:[],activePerson:"everyone",personChecked:{},personCustom:{}};
 try{
  const saved=JSON.parse(localStorage.getItem(KEY)||"null");
@@ -179,16 +179,16 @@ document.getElementById("removePersonBtn").addEventListener("click",()=>{
 });
 
 document.getElementById("saveBtn").addEventListener("click",()=>{
- const backup={format:"goa-packing-checklist",version:1,exportedAt:new Date().toISOString(),state};
+ const backup={format:"-packing-checklist",version:1,exportedAt:new Date().toISOString(),state};
  const blob=new Blob([JSON.stringify(backup,null,2)],{type:"application/json;charset=utf-8"});
- const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="goa-packing-backup.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="-packing-backup.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 });
 document.getElementById("importBtn").addEventListener("click",()=>document.getElementById("importFile").click());
 document.getElementById("importFile").addEventListener("change",async e=>{
  const file=e.target.files&&e.target.files[0];if(!file)return;
  try{
   const parsed=JSON.parse(await file.text());
-  if(!parsed||parsed.format!=="goa-packing-checklist"||parsed.version!==1||!parsed.state||typeof parsed.state!=="object")throw new Error("This doesn't look like a valid Goa checklist backup.");
+  if(!parsed||parsed.format!=="-packing-checklist"||parsed.version!==1||!parsed.state||typeof parsed.state!=="object")throw new Error("This doesn't look like a valid Goa checklist backup.");
   const incoming=parsed.state;
   if(!incoming.checked||typeof incoming.checked!=="object"||!Array.isArray(incoming.custom)||!Array.isArray(incoming.people))throw new Error("The backup file is missing required checklist data.");
   if(!confirm("Import this backup? It will replace the checklist data currently saved in this browser."))return;
