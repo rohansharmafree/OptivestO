@@ -1,1 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#087f8c">
+<title>Goa Trip Packing Checklist</title>
+<style>
+:root{--ink:#17313b;--muted:#617780;--teal:#087f8c;--sea:#e8f7f6;--line:#dce8e9;--paper:#fff;--bg:#f4f8f8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{background:linear-gradient(135deg,#075b68,#10a3a0);color:#fff;padding:32px 18px 38px}
+.hero,.wrap{max-width:900px;margin:auto}.eyebrow{font-size:.78rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.85}
+h1{font-size:clamp(1.8rem,5vw,2.6rem);line-height:1.1;margin:8px 0}header p{margin:10px 0 0;max-width:600px;opacity:.92}
+.wrap{padding:0 16px 40px}.progress-card{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:18px;margin-top:-18px;position:relative;box-shadow:0 8px 25px #17313b0c}
+.progress-row{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:750}.track{height:9px;border-radius:99px;background:#e8eeee;overflow:hidden;margin:12px 0 5px}.bar{height:100%;width:0;background:var(--teal);transition:width .2s}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}button,select,input{font:inherit}button{border:0;border-radius:10px;padding:10px 14px;font-weight:750;cursor:pointer;background:var(--teal);color:#fff}button.secondary{background:var(--sea);color:var(--teal)}button.ghost{background:#f1f4f5;color:#425a62}
+main{padding-top:18px}.section{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0}.section h2{font-size:1.08rem;margin:0 0 12px;display:flex;align-items:center;gap:9px}.section h2 span{font-size:1.35rem}
+.items{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:3px 18px}.item{display:flex;align-items:flex-start;gap:10px;padding:8px 3px;border-bottom:1px solid #f0f4f4;cursor:pointer}.item input{width:18px;height:18px;accent-color:var(--teal);margin-top:3px;flex-shrink:0}.item.checked span{text-decoration:line-through;color:#819197}
+.add-panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;margin:14px 0}.add-panel h2{margin:0 0 4px}.hint{color:var(--muted);font-size:.9rem;margin:0 0 14px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field label{display:block;font-weight:700;font-size:.88rem;margin-bottom:5px}.field select,.field input{width:100%;min-width:0;border:1px solid #cddcde;border-radius:10px;padding:11px;background:#fff;color:var(--ink)}.add-row{display:flex;gap:9px;margin-top:12px}.add-row input{flex:1;min-width:0;border:1px solid #cddcde;border-radius:10px;padding:11px}.custom-items{margin-top:12px}.custom-items:empty{display:none}.small-note{color:var(--muted);font-size:.84rem;margin-top:18px;text-align:center}
+@media(max-width:520px){.form-grid{grid-template-columns:1fr}.section{padding:13px}.progress-card{padding:15px}}
+</style>
+</head>
+<body>
+<header><div class="hero">
+<div class="eyebrow">Trip planner · 5 days</div>
+<h1>Goa Packing Checklist 🌴</h1>
+<p>Tick things off as you pack. Add travellers and customize a separate checklist for each person, or keep a shared list for everyone.</p>
+</div></header>
+<div class="wrap">
+<section class="progress-card" aria-live="polite">
+<div class="progress-row"><span>Packing progress</span><span id="progressText">0 / 0 packed</span></div>
+<div class="track"><div class="bar" id="progressBar"></div></div>
+<div class="actions">
+<button class="secondary" id="saveBtn" type="button">Export backup (.json)</button>
+<button class="secondary" id="importBtn" type="button">Import backup</button>
+<input id="importFile" type="file" accept=".json,application/json" hidden>
+<button class="ghost" id="resetBtn" type="button">Uncheck all</button>
+<button class="ghost" id="clearCustomBtn" type="button">Remove added items</button>
+</div>
+</section>
+<section class="add-panel" id="peoplePanel">
+<h2>👥 Travellers</h2>
+<p class="hint">Add each person in the group. Select a person to customize their packing checklist separately. The “Everyone” view shows the shared checklist.</p>
+<div class="form-grid">
+<div class="field"><label for="personSelect">Customize checklist for</label><select id="personSelect"><option value="everyone">Everyone (shared list)</option></select></div>
+<div class="field"><label for="personName">Add a traveller</label><input id="personName" maxlength="60" placeholder="Enter person's name"></div>
+</div>
+<div class="actions"><button type="button" id="addPersonBtn">Add person</button><button type="button" class="secondary" id="renamePersonBtn">Rename selected</button><button type="button" class="ghost" id="removePersonBtn">Remove selected</button></div>
+<p class="hint" id="personHint" style="margin:12px 0 0">Everyone view: checked items are shared across the group.</p>
+</section>
+<main id="checklist"></main>
+<section class="add-panel">
+<h2>＋ Add extra items</h2>
+<p class="hint">Choose a category from the dropdown, then enter the item name. Your additions and tick marks are saved in this browser. Export a JSON backup to move them to another browser or device.</p>
+<div class="form-grid">
+<div class="field"><label for="categorySelect">Item category</label>
+<select id="categorySelect">
+<option value="Important items">Important items</option><option value="Clothes">Clothes</option><option value="Toiletries & personal care">Toiletries & personal care</option><option value="Health & safety">Health & safety</option><option value="Beach & adventure">Beach & adventure</option><option value="Group essentials">Group essentials</option><option value="Before leaving home">Before leaving home</option><option value="My extra items">My extra items</option>
+</select></div>
+<div class="field"><label for="quickSelect">Suggested extra item (optional)</label>
+<select id="quickSelect"><option value="">Choose a suggestion…</option><option>Travel pillow</option><option>Raincoat / compact umbrella</option><option>Extra charging cable</option><option>Portable fan</option><option>Small laundry bag</option><option>Snorkel mask</option><option>Water shoes</option><option>Eye mask / earplugs</option><option>Book or e-reader</option><option>Reusable shopping bag</option></select></div>
+</div>
+<form id="addForm" class="add-row"><input id="itemName" maxlength="100" placeholder="Type an item name…" aria-label="New item name" required><button type="submit">Add item</button></form>
+<div class="custom-items" id="customItems"></div>
+</section>
+<p class="small-note">Tip: GitHub Pages can host this as a single <strong>index.html</strong> file. Export a JSON backup to save your checklist, then import it on another browser or device. Data is not synced automatically.</p>
+</div>
+<script>
+const defaults = [
+{title:"Important items",icon:"🪪",items:["Aadhaar card / valid ID proof","Flight or train tickets","Hotel / villa booking details","Wallet, cash and debit/credit cards","Phone and charger","Power bank","Earphones"]},
+{title:"Clothes",icon:"👕",items:["5 sets of daily clothes","1–2 extra T-shirts and shorts","5 sets of underwear","5 pairs of socks (if needed)","Nightwear","Swimwear / swimming shorts","One party outfit","Light jacket or shirt","Slippers and comfortable shoes","Extra clothes for water activities"]},
+{title:"Toiletries & personal care",icon:"🧴",items:["Toothbrush and toothpaste","Shampoo and body wash","Deodorant / perfume","Sunscreen (SPF 30–50)","Moisturizer","Comb","Face wash","Towel","Wet wipes and tissues","Hand sanitizer"]},
+{title:"Health & safety",icon:"🩹",items:["Personal medicines","Basic first-aid kit and bandages","Motion-sickness medicine if needed","Mosquito repellent","ORS / electrolyte sachets","Sunglasses","Cap or hat","Reusable water bottle"]},
+{title:"Beach & adventure",icon:"🏖️",items:["Waterproof phone pouch","Small waterproof bag","Beachwear","Quick-dry towel","Flip-flops","Waterproof sunscreen","Extra bag for damp clothes"]},
+{title:"Group essentials",icon:"🎒",items:["Bluetooth speaker (if permitted)","Playing cards / UNO","Camera and accessories","Small backpack for day trips","Shared booking details saved offline","Emergency contacts","Snacks for the journey"]},
+{title:"Before leaving home",icon:"🏠",items:["Check all tickets and IDs","Charge phone and power bank","Download maps and booking details","Check weather forecast","Lock doors and windows","Switch off unnecessary electrical appliances","Confirm transport and hotel check-in"]}
+];
+const KEY="goaPackingChecklist_v1";
+let state={checked:{},custom:[],people:[],activePerson:"everyone",personChecked:{},personCustom:{}};
+try{
+ const saved=JSON.parse(localStorage.getItem(KEY)||"null");
+ if(saved&&typeof saved==="object"){
+  state={
+   checked:saved.checked&&typeof saved.checked==="object"?saved.checked:{},
+   custom:Array.isArray(saved.custom)?saved.custom:[],
+   people:Array.isArray(saved.people)?saved.people:[],
+   activePerson:typeof saved.activePerson==="string"?saved.activePerson:"everyone",
+   personChecked:saved.personChecked&&typeof saved.personChecked==="object"?saved.personChecked:{},
+   personCustom:saved.personCustom&&typeof saved.personCustom==="object"?saved.personCustom:{}
+  };
+ }
+}catch(e){}
+const checklist=document.getElementById("checklist"), progressText=document.getElementById("progressText"), progressBar=document.getElementById("progressBar");
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+function allGroups(){
+ const groups=defaults.map(g=>({...g,items:g.items.map((name,i)=>({id:"d-"+g.title+"-"+i,name,custom:false}))}));
+ const active=state.activePerson||"everyone";
+ state.custom.filter(item=>(item.personId||"everyone")===active || (active==="everyone" && (item.personId||"everyone")==="everyone")).forEach((item,i)=>{let g=groups.find(x=>x.title===item.category);if(!g){g={title:item.category,icon:"➕",items:[]};groups.push(g);}g.items.push({id:item.id||"c-"+i,name:item.name,custom:true});});
+ return groups;
+}
+function isChecked(id){return state.activePerson==="everyone"?!!state.checked[id]:!!((state.personChecked[state.activePerson]||{})[id]);}
+function setChecked(id,value){if(state.activePerson==="everyone"){state.checked[id]=value;}else{state.personChecked[state.activePerson]=state.personChecked[state.activePerson]||{};state.personChecked[state.activePerson][id]=value;}}
+function renderPeople(){
+ const select=document.getElementById("personSelect"),current=state.activePerson||"everyone";
+ select.innerHTML="";
+ const everyone=document.createElement("option");everyone.value="everyone";everyone.textContent="Everyone (shared list)";select.appendChild(everyone);
+ state.people.forEach(p=>{const o=document.createElement("option");o.value=p.id;o.textContent=p.name;select.appendChild(o);});
+ if(current!=="everyone"&&!state.people.some(p=>p.id===current))state.activePerson="everyone";
+ select.value=state.activePerson;
+ const personal=state.activePerson!=="everyone";
+ document.getElementById("personHint").textContent=personal?"Personal view: checkboxes and custom items are saved separately for "+(state.people.find(p=>p.id===state.activePerson)?.name||"this traveller")+".":"Everyone view: checked items and custom additions here are shared across the group.";
+ document.getElementById("renamePersonBtn").disabled=!personal;
+ document.getElementById("removePersonBtn").disabled=!personal;
+}
+function render(){
+ renderPeople();
+ checklist.innerHTML="";
+ const groups=allGroups();
+ groups.forEach(g=>{
+  const section=document.createElement("section");section.className="section";
+  const h=document.createElement("h2");const icon=document.createElement("span");icon.textContent=g.icon||"➕";h.append(icon,document.createTextNode(g.title));section.appendChild(h);
+  const items=document.createElement("div");items.className="items";
+  g.items.forEach(item=>{
+   const label=document.createElement("label");label.className="item"+(state.checked[item.id]?" checked":"");
+   const cb=document.createElement("input");cb.type="checkbox";cb.checked=isChecked(item.id);cb.addEventListener("change",()=>{setChecked(item.id,cb.checked);persist();render();});
+   const txt=document.createElement("span");txt.textContent=item.name;label.append(cb,txt);
+   if(item.custom){const remove=document.createElement("button");remove.type="button";remove.className="ghost";remove.textContent="×";remove.title="Remove "+item.name;remove.style.cssText="margin-left:auto;padding:2px 9px";remove.addEventListener("click",e=>{e.preventDefault();state.custom=state.custom.filter(x=>x.id!==item.id);delete state.checked[item.id];Object.values(state.personChecked).forEach(obj=>delete obj[item.id]);persist();render();});label.appendChild(remove);}
+   items.appendChild(label);
+  });section.appendChild(items);checklist.appendChild(section);
+ });
+ updateProgress();
+}
+function updateProgress(){const groups=allGroups();let total=0,done=0;groups.forEach(g=>g.items.forEach(i=>{total++;if(isChecked(i.id))done++;}));progressText.textContent=`${done} / ${total} packed`;progressBar.style.width=(total?done/total*100:0)+"%";}
+document.getElementById("quickSelect").addEventListener("change",e=>{if(e.target.value)document.getElementById("itemName").value=e.target.value;});
+document.getElementById("addForm").addEventListener("submit",e=>{
+ e.preventDefault();const input=document.getElementById("itemName"),name=input.value.trim();if(!name)return;
+ const category=document.getElementById("categorySelect").value;
+ if(state.custom.some(x=>x.name.toLowerCase()===name.toLowerCase()&&x.category===category&&(x.personId||"everyone")===(state.activePerson||"everyone"))){input.setCustomValidity("This item is already in this category.");input.reportValidity();return;}
+ input.setCustomValidity("");
+ state.custom.push({id:"c-"+Date.now()+"-"+Math.random().toString(36).slice(2,7),name,category,personId:state.activePerson||"everyone"});persist();input.value="";document.getElementById("quickSelect").value="";render();
+});
+document.getElementById("resetBtn").addEventListener("click",()=>{if(confirm("Uncheck every item in the current view? Your added items will remain.")){if(state.activePerson==="everyone")state.checked={};else state.personChecked[state.activePerson]={};persist();render();}});
+document.getElementById("clearCustomBtn").addEventListener("click",()=>{const owner=state.activePerson||"everyone";const matching=state.custom.filter(x=>(x.personId||"everyone")===owner);if(matching.length&&confirm("Remove all custom items in the current view?")){const ids=new Set(matching.map(x=>x.id));matching.forEach(x=>delete state.checked[x.id]);Object.values(state.personChecked).forEach(obj=>ids.forEach(id=>delete obj[id]));state.custom=state.custom.filter(x=>!ids.has(x.id));persist();render();}});
 
+document.getElementById("personSelect").addEventListener("change",e=>{state.activePerson=e.target.value;persist();render();});
+document.getElementById("addPersonBtn").addEventListener("click",()=>{
+ const input=document.getElementById("personName");
+ const name=input.value.trim();
+ if(!name){input.focus();input.setCustomValidity("Please enter a person's name.");input.reportValidity();return;}
+ input.setCustomValidity("");
+ if(state.people.some(p=>p.name.toLowerCase()===name.toLowerCase())){alert("A traveller with this name already exists.");return;}
+ const id="p-"+Date.now()+"-"+Math.random().toString(36).slice(2,6);
+ state.people.push({id,name});
+ state.personChecked[id]={};
+ state.personCustom[id]=[];
+ state.activePerson=id;
+ input.value="";
+ persist();
+ render();
+});
+document.getElementById("personName").addEventListener("input",e=>e.target.setCustomValidity(""));
+document.getElementById("personName").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();document.getElementById("addPersonBtn").click();}});
+document.getElementById("renamePersonBtn").addEventListener("click",()=>{
+ if(state.activePerson==="everyone")return;
+ const person=state.people.find(p=>p.id===state.activePerson);if(!person)return;
+ const name=prompt("Enter a new name for this traveller:",person.name);
+ if(name&&name.trim()){
+  if(state.people.some(p=>p.id!==person.id&&p.name.toLowerCase()===name.trim().toLowerCase())){alert("A traveller with this name already exists.");return;}
+  person.name=name.trim();persist();render();
+ }
+});
+document.getElementById("removePersonBtn").addEventListener("click",()=>{
+ if(state.activePerson==="everyone")return;
+ const person=state.people.find(p=>p.id===state.activePerson);if(!person)return;
+ if(confirm("Remove "+person.name+" and their personal checklist? Their personal custom items will also be removed.")){
+  const id=state.activePerson;state.people=state.people.filter(p=>p.id!==id);state.custom=state.custom.filter(x=>x.personId!==id);
+  delete state.personChecked[id];delete state.personCustom[id];state.activePerson="everyone";persist();render();
+ }
+});
+
+document.getElementById("saveBtn").addEventListener("click",()=>{
+ const backup={format:"goa-packing-checklist",version:1,exportedAt:new Date().toISOString(),state};
+ const blob=new Blob([JSON.stringify(backup,null,2)],{type:"application/json;charset=utf-8"});
+ const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="goa-packing-backup.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
+document.getElementById("importBtn").addEventListener("click",()=>document.getElementById("importFile").click());
+document.getElementById("importFile").addEventListener("change",async e=>{
+ const file=e.target.files&&e.target.files[0];if(!file)return;
+ try{
+  const parsed=JSON.parse(await file.text());
+  if(!parsed||parsed.format!=="goa-packing-checklist"||parsed.version!==1||!parsed.state||typeof parsed.state!=="object")throw new Error("This doesn't look like a valid Goa checklist backup.");
+  const incoming=parsed.state;
+  if(!incoming.checked||typeof incoming.checked!=="object"||!Array.isArray(incoming.custom)||!Array.isArray(incoming.people))throw new Error("The backup file is missing required checklist data.");
+  if(!confirm("Import this backup? It will replace the checklist data currently saved in this browser."))return;
+  state={checked:incoming.checked||{},custom:incoming.custom||[],people:incoming.people||[],activePerson:incoming.activePerson||"everyone",personChecked:incoming.personChecked||{},personCustom:incoming.personCustom||{}};
+  persist();render();alert("Checklist backup imported successfully.");
+ }catch(err){alert("Could not import backup: "+err.message);}
+ finally{e.target.value="";}
+});
+render();
+</script>
+</body>
+</html>
